@@ -1,7 +1,8 @@
+# Upstream VSCodium ignores
 vscode*
-VS*/*
-VSCode*
-VSCodium*
+VSCode-*/
+VSCodium-*/
+VSCodium/
 .DS_Store
 *.env
 assets/
@@ -19,3 +20,30 @@ stores/snapcraft/insider/*.snap
 stores/snapcraft/stable/*.snap
 font-size/node_modules/
 font-size/generate-css.js
+
+# VS Sharp dev environment
+.venv/
+.claude/settings.local.json
+
+# Node / npm
+node_modules/
+*.log
+npm-debug.log*
+
+# vssharp generic build artifacts
+vssharp/extensions/*/node_modules/
+vssharp/extensions/*/out/
+
+# DotRush — fetched by vssharp/install-dotrush.sh (not committed).
+# Pin commit + patches live in vssharp/dotrush.UPSTREAM.txt + vssharp/dotrush.patches/.
+vssharp/extensions/dotrush/
+vssharp/extensions/dotrush.UPSTREAM.txt
+
+# vssharp-runner — built bundle excluded (rebuild via npm run compile)
+vssharp/extensions/vssharp-runner/extension/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.zed/

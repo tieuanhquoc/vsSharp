@@ -1,0 +1,6 @@
+# DotRush upstream pin — parsed by vssharp/install-dotrush.sh
+# To upgrade: bump COMMIT and re-run install-dotrush.sh --force
+REPO=https://github.com/JaneySprings/DotRush
+COMMIT=4f3c65b6cc35743c5aa10dda8bd4b0179346e1be
+DATE=2026-05-03
+NOTES=[Fix]: DotRush crashes when dotnet build is run (#185)

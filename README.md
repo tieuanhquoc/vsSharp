@@ -1,220 +1,130 @@
-<div id="vscodium-logo" align="center">
+<div id="vssharp-logo" align="center">
     <br />
-    <img src="./icons/stable/codium_cnl.svg" alt="VSCodium Logo" width="200"/>
-    <h1>VSCodium</h1>
-    <h3>Free/Libre Open Source Software Binaries of Visual Studio Code</h3>
+    <h1>VS Sharp</h1>
+    <h3>A Free/Libre C# IDE built on VSCodium</h3>
 </div>
 
-<div id="badges" align="center">
+---
 
-[![current release](https://img.shields.io/github/release/vscodium/vscodium.svg)](https://github.com/vscodium/vscodium/releases)
-[![license](https://img.shields.io/github/license/VSCodium/vscodium.svg)](https://github.com/VSCodium/vscodium/blob/master/LICENSE)
-[![Gitter](https://img.shields.io/gitter/room/vscodium/vscodium.svg)](https://gitter.im/VSCodium/Lobby)
-[![codium](https://snapcraft.io//codium/badge.svg)](https://snapcraft.io/codium)
-[![codium](https://snapcraft.io//codium/trending.svg?name=0)](https://snapcraft.io/codium)
+**VS Sharp** is a fork-customization of [VSCodium](https://github.com/VSCodium/vscodium) (the FLOSS rebuild of Microsoft VS Code) tailored as a dedicated **C# / .NET IDE**.
 
-[![build status (linux)](https://img.shields.io/github/actions/workflow/status/VSCodium/vscodium/stable-linux.yml?branch=master&label=build%28linux%29)](https://github.com/VSCodium/vscodium/actions/workflows/stable-linux.yml?query=branch%3Amaster)
-[![build status (macos)](https://img.shields.io/github/actions/workflow/status/VSCodium/vscodium/stable-macos.yml?branch=master&label=build%28macOS%29)](https://github.com/VSCodium/vscodium/actions/workflows/stable-macos.yml?query=branch%3Amaster)
-[![build status (windows)](https://img.shields.io/github/actions/workflow/status/VSCodium/vscodium/stable-windows.yml?branch=master&label=build%28windows%29)](https://github.com/VSCodium/vscodium/actions/workflows/stable-windows.yml?query=branch%3Amaster)
+It is **not** a from-scratch fork. We follow VSCodium's pattern: re-build Microsoft's MIT-licensed `vscode` source with custom patches, branding, and bundled extensions. All customizations live in a separate `vssharp/` tree so upstream sync stays manageable.
 
-</div>
+## What's different from VSCodium
 
-**This is not a fork. This is a repository of scripts to automatically build [Microsoft's `vscode` repository](https://github.com/microsoft/vscode) into freely-licensed binaries with a community-driven default configuration.**
+| Layer | VS Sharp customization |
+|-------|------------------------|
+| Branding | `VS Sharp` name, `com.vssharp` bundle ID, `vssharp` CLI/protocol, purple C# logo |
+| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger) vendored; **VS Sharp Runner** (multi-project run/debug from `Properties/launchSettings.json`) |
+| Marketplace | Open VSX (inherited from VSCodium) |
+| Telemetry | Disabled (inherited from VSCodium) |
 
-## Table of Contents
+## Highlights
 
-- [Download/Install](#download-install)
-  - [Install with Brew](#install-with-brew)
-  - [Install with Windows Package Manager (WinGet)](#install-with-winget)
-  - [Install with Chocolatey](#install-with-choco)
-  - [Install with Scoop](#install-with-scoop)
-  - [Install with snap](#install-with-snap)
-  - [Install with Package Manager](#install-with-package-manager)
-  - [Install on Arch Linux](#install-on-arch-linux)
-  - [Flatpak Option](#flatpak)
-- [Build](#build)
-- [Why Does This Exist](#why)
-- [More Info](#more-info)
-- [Supported Platforms](#supported-platforms)
+- **Roslyn-powered C# tooling** out of the box — no need to install any extension.
+- **Run / Debug from `Properties/launchSettings.json`** like Rider / Visual Studio:
+  - Sidebar tree view of all projects × profiles in your workspace.
+  - Editor toolbar buttons auto-detect the project containing the focused file.
+  - Concurrent sessions — run profile A while debugging profile B, each in its own terminal.
+  - Per-project memory for last-used profile.
+  - Status bar shows running session count.
+- **Modular customization** in `vssharp/extensions/` — fork your own .NET / C# extensions, bundle them as core features that ship with the app.
 
-## <a id="download-install"></a>Download/Install
+## Project layout
 
-:tada: :tada:
-Download latest release here:
-[stable](https://github.com/VSCodium/vscodium/releases) or
-[insiders](https://github.com/VSCodium/vscodium-insiders/releases)
-:tada: :tada:
-
-[More info / helpful tips are here.](https://github.com/VSCodium/vscodium/blob/master/docs/index.md)
-
-
-#### <a id="install-with-brew"></a>Install with Brew (Mac)
-
-If you are on a Mac and have [Homebrew](https://brew.sh/) installed:
-```bash
-# stable
-brew install --cask vscodium
-
-# insiders
-brew install --cask vscodium@insiders
+```
+vscodium/                                # repo root (still named vscodium from upstream)
+├── upstream/{stable,insider}.json       # pinned MS vscode commit
+├── patches/                             # ~50 VSCodium patches (FLOSS rebrand + telemetry off)
+├── src/{stable,insider}/                # VSCodium resource overrides (icons, plist)
+├── vssharp/                             # ⭐ VS Sharp customizations
+│   ├── extend-prepare.sh                # bundles vssharp/extensions/* → vscode/extensions/
+│   ├── install-dotrush.sh               # clones DotRush at pinned commit + builds
+│   ├── dotrush.UPSTREAM.txt             # pin commit hash for DotRush
+│   ├── dotrush.patches/                 # local patches re-applied on each install
+│   └── extensions/
+│       ├── dotrush/                     # (gitignored) fetched by install-dotrush.sh
+│       └── vssharp-runner/              # custom extension (launchSettings.json runner)
+├── apply-version.sh                     # fix vscode/package.json version
+├── apply-branding.sh                    # rewrite product.json → "VS Sharp"
+├── apply-logo.sh <png>                  # embed PNG into 5 SVG slots
+├── env.local.sh                         # source per terminal (nvm + venv + env vars)
+├── run-app.sh                           # launch helper (strips NODE_OPTIONS for Electron)
+└── docs/howto-run-dev.md                # full dev guide
 ```
 
-#### <a id="install-with-winget"></a>Install with Windows Package Manager (WinGet)
+## Quick start
 
-If you use Windows and have [Windows Package Manager](https://github.com/microsoft/winget-cli) installed:
-```cmd
-:: stable
-winget install -e --id VSCodium.VSCodium
-
-:: insider
-winget install -e --id VSCodium.VSCodium.Insiders
-```
-
-#### <a id="install-with-choco"></a>Install with Chocolatey (Windows)
-
-If you use Windows and have [Chocolatey](https://chocolatey.org) installed (thanks to [@Thilas](https://github.com/Thilas)):
-```cmd
-:: stable
-choco install vscodium
-
-:: insider
-choco install vscodium-insiders
-```
-
-#### <a id="install-with-scoop"></a>Install with Scoop (Windows)
-
-If you use Windows and have [Scoop](https://scoop.sh) installed:
-```bash
-scoop bucket add extras
-scoop install vscodium
-```
-
-#### <a id="install-with-snap"></a>Install with snap (GNU/Linux)
-
-VSCodium is available in the [Snap Store](https://snapcraft.io/) as [Codium](https://snapcraft.io/codium), thanks to the help of the [Snapcrafters](https://github.com/snapcrafters/codium) community.
-If your GNU/Linux distribution has support for [snaps](https://snapcraft.io/docs/installing-snapd):
+Full setup + usage guide: **[docs/howto-run-dev.md](docs/howto-run-dev.md)**.
 
 ```bash
-snap install codium --classic
+# Tools
+brew install jq python@3.11
+source ~/.nvm/nvm.sh && nvm install 22.22.1
+dotnet tool install --global Cake.Tool          # to build DotRush
+
+# Once
+/opt/homebrew/opt/python@3.11/bin/python3.11 -m venv .venv
+source ./env.local.sh
+
+# Pipeline (~25 min first time)
+. ./get_repo.sh
+. ./prepare_vscode.sh
+./apply-version.sh
+./apply-branding.sh
+./apply-logo.sh /path/to/your-logo.png
+
+# Fetch + build DotRush (pinned in vssharp/dotrush.UPSTREAM.txt)
+./vssharp/install-dotrush.sh
+
+# Build vssharp-runner
+( cd vssharp/extensions/vssharp-runner && npm install && npm run compile )
+
+# Copy bundled extensions into vscode/extensions/
+./vssharp/extend-prepare.sh
+
+# Dev — two terminals
+# T1: source ./env.local.sh && cd vscode && npm run watch
+# T2: ./run-app.sh
 ```
 
-#### <a id="install-with-package-manager"></a>Install with Package Manager (GNU/Linux)
+In-app: `Cmd+R` to reload after editing `vscode/src/...` or any built extension.
 
-You can always install using the downloads (deb, rpm, tar) on the releases page for [stable](https://github.com/VSCodium/vscodium/releases) or [insiders](https://github.com/VSCodium/vscodium-insiders/releases), but you can also install using your favorite package manager and get automatic updates.
+## Why does this exist
 
-[@paulcarroty](https://github.com/paulcarroty) has set up a repository with instructions for `apt`, `dnf` and `zypper` [here](https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo).
+C# / .NET development on VS Code today requires Microsoft's proprietary **C# Dev Kit** (license restricts use to official VS Code builds). VS Sharp ships a 100% open-source alternative stack:
 
-Any issues installing VSCodium using your package manager should be directed to that repository's issue tracker.
+- **[DotRush](https://github.com/JaneySprings/DotRush)** (MIT) — Roslyn LSP + debugger, vendored as a built-in.
+- **VS Sharp Runner** — custom extension giving Rider-class run/debug UX from `Properties/launchSettings.json` (concurrent sessions, multi-project, auto-detect).
+- Everything else inherited from VSCodium: telemetry off, open-vsx marketplace, FLOSS binaries.
 
-#### <a id="install-on-arch-linux"></a>Install on Arch Linux
+You can `git clone`, customize, and rebrand to your own IDE name in a few minutes. See `apply-branding.sh` and `apply-logo.sh`.
 
-VSCodium is available in [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository), maintained by [@binex-dsk](https://github.com/binex-dsk) as package [vscodium-bin](https://aur.archlinux.org/packages/vscodium-bin/) (stable) and as [vscodium-insiders-bin](https://aur.archlinux.org/packages/vscodium-insiders-bin).
+## Supported platforms
 
-If you want to save disk space by having VSCodium use the Electron system-wide, you also have [vscodium-electron](https://aur.archlinux.org/packages/vscodium-electron),
-maintained by [@m00nw4tch3r](https://aur.archlinux.org/account/m00nw4tch3r).
+Currently verified on **macOS arm64**. Linux / Windows should work (VSCodium build scripts handle them) but haven't been validated for the VS Sharp customizations yet.
 
-An alternative package [vscodium-git](https://aur.archlinux.org/packages/vscodium-git/), maintained by [@cedricroijakkers](https://github.com/cedricroijakkers), is also available should you wish to compile from source yourself.
-
-#### <a id="flatpak"></a>Flatpak Option (GNU/Linux)
-
-VSCodium is available as a Flatpak app [here](https://flathub.org/apps/details/com.vscodium.codium) and the build repo is [here](https://github.com/flathub/com.vscodium.codium).
-If your distribution has support for [flatpak](https://flathub.org), and you have enabled the [flathub repo](https://flatpak.org/setup/):
+## Build a release `.app`
 
 ```bash
-flatpak install flathub com.vscodium.codium
-flatpak run com.vscodium.codium
+./dev/build.sh -s -p
+open VSCode-darwin-arm64/VSCodium.app   # name still "VSCodium" until full rebrand of dev/build.sh
 ```
 
-## <a id="build"></a>Build
+⚠ **Never** run `./dev/build.sh` without `-s` — it deletes `vscode/` and all customizations.
 
-Build instructions can be found [here](https://github.com/VSCodium/vscodium/blob/master/docs/howto-build.md)
+## License
 
-## <a id="why"></a>Why Does This Exist
+MIT. See [LICENSE](LICENSE).
 
-This repository contains build files to generate free release binaries of Microsoft's Visual Studio Code. When we speak of "free software", we're talking about freedom, not price.
+VS Sharp redistributes:
+- Microsoft VS Code source (MIT) via VSCodium's rebuild scripts.
+- VSCodium scripts and patches (MIT).
+- DotRush extension (MIT, by [@JaneySprings](https://github.com/JaneySprings)).
+- VS Sharp Runner (MIT, this repo).
 
-Microsoft's releases of Visual Studio Code are licensed under [this not-FLOSS license](https://code.visualstudio.com/license) and contain telemetry/tracking. According to [this comment](https://github.com/Microsoft/vscode/issues/60#issuecomment-161792005) from a Visual Studio Code maintainer:
+## Acknowledgements
 
-> When we [Microsoft] build Visual Studio Code, we do exactly this. We clone the vscode repository, we lay down a customized product.json that has Microsoft specific functionality (telemetry, gallery, logo, etc.), and then produce a build that we release under our license.
->
-> When you clone and build from the vscode repo, none of these endpoints are configured in the default product.json. Therefore, you generate a "clean" build, without the Microsoft customizations, which is by default licensed under the MIT license
-
-This repo exists so that you don't have to download+build from source. The build scripts in this repo clone Microsoft's vscode repo, run the build commands, and upload the resulting binaries to [GitHub releases](https://github.com/VSCodium/vscodium/releases). __These binaries are licensed under the MIT license. Telemetry is disabled.__
-
-If you want to build from source yourself, head over to [Microsoft's vscode repo](https://github.com/Microsoft/vscode) and follow their [instructions](https://github.com/Microsoft/vscode/wiki/How-to-Contribute#build-and-run). This repo exists to make it easier to get the latest version of MIT-licensed Visual Studio Code.
-
-Microsoft's build process (which we are running to build the binaries) does download additional files. Those packages downloaded during build are:
-
-- Pre-built extensions from the GitHub:
-  - [ms-vscode.js-debug-companion](https://github.com/microsoft/vscode-js-debug-companion)
-  - [ms-vscode.js-debug](https://github.com/microsoft/vscode-js-debug)
-  - [ms-vscode.vscode-js-profile-table](https://github.com/microsoft/vscode-js-profile-visualizer)
-- From [Electron releases](https://github.com/electron/electron/releases) (using [gulp-atom-electron](https://github.com/joaomoreno/gulp-atom-electron))
-  - electron
-  - ffmpeg
-
-## <a id="more-info"></a>More Info
-
-### Documentation
-
-For more information on getting all the telemetry disabled, tips for migrating from Visual Studio Code to VSCodium and more, have a look at [the Docs page](https://github.com/VSCodium/vscodium/blob/master/docs/index.md) page.
-
-### Troubleshooting
-
-If you have any issue, please check [the Troubleshooting page](https://github.com/VSCodium/vscodium/blob/master/docs/troubleshooting.md) or the existing issues.
-
-### Extensions and the Marketplace
-
-According to the Visual Studio Marketplace [Terms of Use](https://aka.ms/vsmarketplace-ToU), _you may only install and use Marketplace Offerings with Visual Studio Products and Services._ For this reason, VSCodium uses [open-vsx.org](https://open-vsx.org/), an open source registry for Visual Studio Code extensions. See the [Extensions + Marketplace](https://github.com/VSCodium/vscodium/blob/master/docs/index.md#extensions-marketplace) section on the Docs page for more details.
-
-Please note that some Visual Studio Code extensions have licenses that restrict their use to the official Visual Studio Code builds and therefore do not work with VSCodium. See [this note](https://github.com/VSCodium/vscodium/blob/master/docs/extensions.md#proprietary-debugging-tools) on the Docs page for what's been found so far and possible workarounds.
-
-### How are the VSCodium binaries built?
-
-If you would like to see the commands we run to build `vscode` into VSCodium binaries, have a look at the workflow files in `.github/workflows` for Windows, GNU/Linux and macOS. These build files call all the other scripts in the repo. If you find something that doesn't make sense, feel free to ask about it [on Gitter](https://gitter.im/VSCodium/Lobby).
-
-The builds are run every day, but exit early if there isn't a new release from Microsoft.
-
-## <a id="supported-platforms"></a>Supported Platforms
-
-The minimal version is limited by the core component Electron, you may want to check its [platform prerequisites](https://www.electronjs.org/docs/latest/development/build-instructions-gn#platform-prerequisites).
-
-- [x] macOS (`zip`, `dmg`) macOS 12 or newer x64
-- [x] macOS (`zip`, `dmg`) macOS 12 or newer arm64
-- [x] GNU/Linux x64 (`deb`, `rpm`, `AppImage`, `snap`, `tar.gz`)
-- [x] GNU/Linux arm64 (`deb`, `rpm`, `snap`, `tar.gz`)
-- [x] GNU/Linux armhf (`deb`, `rpm`, `tar.gz`)
-- [x] GNU/Linux riscv64 (`tar.gz`)
-- [x] GNU/Linux loong64 (`tar.gz`)
-- [x] GNU/Linux ppc64le (`tar.gz`)
-- [x] Windows 10 / Server 2012 R2 or newer x64
-- [x] Windows 10 / Server 2012 R2 or newer arm64
-
-## <a id="thanks"></a>Special thanks
-
-<table>
-  <tr>
-    <td><a href="https://github.com/jaredreich" target="_blank">@jaredreich</a></td>
-    <td>for the logo</td>
-  </tr>
-  <tr>
-    <td><a href="https://github.com/PalinuroSec" target="_blank">@PalinuroSec</a></td>
-    <td>for CDN and domain name</td>
-  </tr>
-  <tr>
-    <td><a href="https://www.macstadium.com" target="_blank"><img src="https://images.prismic.io/macstadium/66fbce64-707e-41f3-b547-241908884716_MacStadium_Logo.png?w=128&q=75" width="128" height="49" alt="MacStadium logo" /></a></td>
-    <td>for providing a Mac mini M1</td>
-  </tr>
-  <tr>
-    <td><a href="https://github.com/daiyam" target="_blank">@daiyam</a></td>
-    <td>for macOS certificate</td>
-  </tr>
-  <tr>
-    <td><a href="https://signpath.org/" target="_blank"><img src="https://avatars.githubusercontent.com/u/34448643" height="30" alt="SignPath logo" /></a></td>
-    <td>free code signing on Windows provided by <a href="https://signpath.io/" target="_blank">SignPath.io</a>, certificate by <a href="https://signpath.org/" target="_blank">SignPath Foundation</a></td>
-  </tr>
-</table>
-
-## <a id="license"></a>License
-
-[MIT](https://github.com/VSCodium/vscodium/blob/master/LICENSE)
+- The **[VSCodium](https://github.com/VSCodium/vscodium)** team for the FLOSS rebuild infrastructure.
+- **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** for the open-source Roslyn-based C# tooling.
+- The **VS Code** team for the editor itself (MIT source).
