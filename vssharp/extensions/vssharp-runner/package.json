@@ -1,0 +1,133 @@
+{
+  "name": "vssharp-runner",
+  "displayName": "VS Sharp Runner",
+  "description": "Run & debug .NET projects from Properties/launchSettings.json (Rider/Visual Studio style)",
+  "publisher": "vssharp",
+  "version": "0.2.0",
+  "engines": { "vscode": "^1.73.0" },
+  "categories": ["Other", "Debuggers"],
+  "main": "./extension/main.js",
+  "scripts": {
+    "compile": "webpack --mode production",
+    "watch": "webpack --mode development --watch"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.73.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.4.0",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "activationEvents": [
+    "workspaceContains:**/Properties/launchSettings.json",
+    "workspaceContains:**/*.csproj",
+    "workspaceContains:**/*.sln"
+  ],
+  "contributes": {
+    "commands": [
+      { "command": "vssharp.runner.selectProfile",         "title": "VS Sharp: Select Run Profile",     "icon": "$(rocket)" },
+      { "command": "vssharp.runner.run",                   "title": "VS Sharp: Run (no debug)",         "icon": "$(play)" },
+      { "command": "vssharp.runner.debug",                 "title": "VS Sharp: Run with Debug",         "icon": "$(debug-alt)" },
+      { "command": "vssharp.runner.runActive",             "title": "VS Sharp: Run Current File's Project",   "icon": "$(play)" },
+      { "command": "vssharp.runner.debugActive",           "title": "VS Sharp: Debug Current File's Project", "icon": "$(debug-alt)" },
+      { "command": "vssharp.runner.stop",                  "title": "VS Sharp: Stop",                   "icon": "$(debug-stop)" },
+      { "command": "vssharp.runner.stopAll",               "title": "VS Sharp: Stop All Running",       "icon": "$(stop-circle)" },
+      { "command": "vssharp.runner.refresh",               "title": "VS Sharp: Refresh Profiles",       "icon": "$(refresh)" },
+      { "command": "vssharp.runner.showRunning",           "title": "VS Sharp: Show Running Sessions" },
+      { "command": "vssharp.runner.selectProfileFromTree", "title": "Select Profile" }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vssharp-runner",
+          "title": "VS Sharp Run",
+          "icon": "$(rocket)"
+        }
+      ]
+    },
+    "views": {
+      "vssharp-runner": [
+        {
+          "id": "vssharp.runner.profiles",
+          "name": "Run Configurations",
+          "icon": "$(rocket)",
+          "contextualTitle": "VS Sharp"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "vssharp.runner.refresh",
+          "when": "view == vssharp.runner.profiles",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vssharp.runner.stopAll",
+          "when": "view == vssharp.runner.profiles",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vssharp.runner.run",
+          "when": "view == vssharp.runner.profiles && viewItem == vssharp.profile.idle",
+          "group": "inline@1"
+        },
+        {
+          "command": "vssharp.runner.debug",
+          "when": "view == vssharp.runner.profiles && viewItem == vssharp.profile.idle",
+          "group": "inline@2"
+        },
+        {
+          "command": "vssharp.runner.stop",
+          "when": "view == vssharp.runner.profiles && viewItem =~ /vssharp.profile.(running|debugging)/",
+          "group": "inline@1"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "vssharp.runner.runActive",
+          "group": "navigation@10",
+          "when": "vssharp.runner.hasProfiles"
+        },
+        {
+          "command": "vssharp.runner.debugActive",
+          "group": "navigation@11",
+          "when": "vssharp.runner.hasProfiles"
+        }
+      ],
+      "editor/title/run": [
+        { "command": "vssharp.runner.runActive",   "group": "vssharp@1", "when": "vssharp.runner.hasProfiles" },
+        { "command": "vssharp.runner.debugActive", "group": "vssharp@2", "when": "vssharp.runner.hasProfiles" },
+        { "command": "vssharp.runner.selectProfile", "group": "vssharp@3", "when": "vssharp.runner.hasProfiles" }
+      ]
+    },
+    "keybindings": [
+      { "command": "vssharp.runner.debug", "key": "f5",      "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus" },
+      { "command": "vssharp.runner.run",   "key": "ctrl+f5", "when": "vssharp.runner.hasProfiles && !inDebugMode" },
+      { "command": "vssharp.runner.run",   "key": "cmd+f5",  "when": "vssharp.runner.hasProfiles && !inDebugMode && isMac", "mac": "cmd+f5" }
+    ],
+    "configuration": {
+      "title": "VS Sharp Runner",
+      "properties": {
+        "vssharp.runner.dotnetPath": {
+          "type": "string", "default": "dotnet",
+          "description": "Path to the dotnet CLI"
+        },
+        "vssharp.runner.configuration": {
+          "type": "string", "enum": ["Debug", "Release"], "default": "Debug",
+          "description": "MSBuild configuration"
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "vssharpRunner.statusBarForeground",
+        "description": "VS Sharp Runner status bar item foreground",
+        "defaults": { "dark": "#C7B0FF", "light": "#5B2EBF", "highContrast": "#D8C2FF" }
+      }
+    ]
+  }
+}

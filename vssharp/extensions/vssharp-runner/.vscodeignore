@@ -1,0 +1,8 @@
+node_modules/**
+src/**
+.vscode/**
+tsconfig.json
+webpack.config.js
+out/**
+.gitignore
+**/.DS_Store

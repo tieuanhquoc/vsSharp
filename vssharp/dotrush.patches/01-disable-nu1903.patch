@@ -1,0 +1,20 @@
+From: VS Sharp <noreply@vssharp>
+Subject: Bypass NU1903 error for Nerdbank.MessagePack 1.0.2
+
+Nerdbank.MessagePack 1.0.2 has a security advisory (NU1903) that triggers
+"warning as error" in DotRush's strict build. We can't easily bump it
+without upstream changes, so demote it to a regular warning.
+
+Re-apply after pulling a new DotRush upstream pin.
+
+--- a/src/Common.Build.props
++++ b/src/Common.Build.props
+@@ -15,6 +15,7 @@
+         <NoWarn>$(NoWarn);NUnit2045</NoWarn>
+         <AssetsPath>$(MSBuildThisFileDirectory)..\extension\bin\</AssetsPath>
+         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+-        <WarningsAsErrors>$(WarningsAsErrors);NU1903;NU1904</WarningsAsErrors>
++        <WarningsAsErrors>$(WarningsAsErrors);NU1904</WarningsAsErrors>
++        <NoWarn>$(NoWarn);NU1903</NoWarn>
+     </PropertyGroup>
+
