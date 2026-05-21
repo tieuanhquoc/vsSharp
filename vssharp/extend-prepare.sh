@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 # vssharp/extend-prepare.sh
-# Copy vssharp/extensions/* into vscode/extensions/ as built-in extensions.
-# Run AFTER prepare_vscode.sh (which applies VSCodium patches + npm ci).
-# Idempotent — safe to re-run.
+# Copy every directory in vssharp/extensions/<name>/ into
+# vscode/extensions/<name>/ as a built-in extension.
+#
+# Each source folder MUST already be "ready to install":
+#   - package.json at root
+#   - main bundle path matching package.json "main" field (out/extension.js,
+#     extension/main.js, dist/main.js, etc.)
+#
+# install-<name>.sh scripts do the clone+build+cleanup. This script only copies.
+#
+# Run AFTER prepare_vscode.sh. Idempotent — safe to re-run.
 
 set -e
 
@@ -15,49 +23,37 @@ if [[ ! -d "${VSCODE_EXT}" ]]; then
   exit 1
 fi
 
+# Common dev-only files we never want to ship as a built-in.
+EXCLUDES=(
+  --exclude='node_modules'
+  --exclude='src'
+  --exclude='.git'
+  --exclude='.github'
+  --exclude='.vscode'
+  --exclude='.vscodeignore'
+  --exclude='.gitignore'
+  --exclude='.editorconfig'
+  --exclude='tsconfig*.json'
+  --exclude='webpack.config.js'
+  --exclude='package-lock.json'
+  --exclude='*.log'
+  --exclude='.DS_Store'
+)
+
 shopt -s nullglob
 for SRC in "${VSSHARP_EXT}"/*/; do
   NAME=$( basename "${SRC%/}" )
   DEST="${VSCODE_EXT}/${NAME}"
 
-  echo "::group::Installing ${NAME}"
-
-  # Each vssharp extension MUST provide a built-and-ready 'extension/' folder
-  # (compiled JS + assets) and a package.json. We treat that as the bundle root.
-  if [[ -d "${SRC}extension" ]]; then
-    BUNDLE_ROOT="${SRC}extension"
-    PACKAGE_JSON="${SRC}package.json"
-  else
-    BUNDLE_ROOT="${SRC}"
-    PACKAGE_JSON="${SRC}package.json"
-  fi
-
-  if [[ ! -f "${PACKAGE_JSON}" ]]; then
-    echo "  skip: no package.json at ${PACKAGE_JSON}"
+  if [[ ! -f "${SRC}package.json" ]]; then
+    echo "skip ${NAME}: no package.json"
     continue
   fi
 
+  echo "::group::Installing ${NAME}"
   rm -rf "${DEST}"
   mkdir -p "${DEST}"
-
-  # Copy package metadata at the root
-  cp "${PACKAGE_JSON}" "${DEST}/package.json"
-  [[ -f "${SRC}package.nls.json" ]] && cp "${SRC}package.nls.json" "${DEST}/"
-  [[ -f "${SRC}README.md" ]]        && cp "${SRC}README.md"        "${DEST}/"
-  [[ -f "${SRC}LICENSE" ]]          && cp "${SRC}LICENSE"          "${DEST}/"
-  [[ -d "${SRC}assets" ]]           && cp -r "${SRC}assets"        "${DEST}/"
-  [[ -d "${SRC}themes" ]]           && cp -r "${SRC}themes"        "${DEST}/"
-  [[ -d "${SRC}syntaxes" ]]         && cp -r "${SRC}syntaxes"      "${DEST}/"
-  [[ -d "${SRC}snippets" ]]         && cp -r "${SRC}snippets"      "${DEST}/"
-  [[ -d "${SRC}language-configuration" ]] && cp -r "${SRC}language-configuration" "${DEST}/"
-
-  # Copy the compiled bundle (extension/ output from cake build) under the
-  # path referenced by package.json "main". DotRush's main is "extension/main.js"
-  # so we put the bundle at <DEST>/extension/.
-  if [[ -d "${BUNDLE_ROOT}" && "${BUNDLE_ROOT}" != "${SRC%/}" ]]; then
-    cp -r "${BUNDLE_ROOT}" "${DEST}/extension"
-  fi
-
+  rsync -a "${EXCLUDES[@]}" "${SRC}" "${DEST}/"
   echo "  installed: ${DEST}"
   echo "::endgroup::"
 done

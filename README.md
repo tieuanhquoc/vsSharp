@@ -15,7 +15,11 @@ It is **not** a from-scratch fork. We follow VSCodium's pattern: re-build Micros
 | Layer | VS Sharp customization |
 |-------|------------------------|
 | Branding | `VS Sharp` name, `com.vssharp` bundle ID, `vssharp` CLI/protocol, purple C# logo |
-| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger) vendored; **VS Sharp Runner** (multi-project run/debug from `Properties/launchSettings.json`) |
+| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger); **VS Sharp Runner** (multi-project run/debug from `Properties/launchSettings.json`); **VS Sharp Explorer** (custom Rider-style webview with Solution + Files tabs, JetBrains-style icons); **JetBrains Product Icon Theme** (set as default); **JetBrains Color Theme** (set as default dark + light) |
+| Icon set | JetBrains New UI file icons (fogio file-icon-theme bundle) + JetBrains New UI product icons (fogio product-icon-theme) |
+| Color theme | JetBrains New UI color theme (fogio, set as default for dark + light) |
+| Default Explorer | Module hidden via `patches/user/` — registered at AuxiliaryBar with no icon, no command, no toggle. VS Sharp Explorer is the only file browser. |
+| Rider-like defaults | ~40 settings pre-tuned to match JetBrains Rider feel: JetBrains Mono font 13px / line-height 1.5, breadcrumbs on, indent guides, sticky scroll, tree indent 16, single-click expand, custom title bar, auto-save, no minimap, ... (override-able in user `settings.json`) |
 | Marketplace | Open VSX (inherited from VSCodium) |
 | Telemetry | Disabled (inherited from VSCodium) |
 
@@ -36,15 +40,23 @@ It is **not** a from-scratch fork. We follow VSCodium's pattern: re-build Micros
 vscodium/                                # repo root (still named vscodium from upstream)
 ├── upstream/{stable,insider}.json       # pinned MS vscode commit
 ├── patches/                             # ~50 VSCodium patches (FLOSS rebrand + telemetry off)
+│   └── user/                            # VS Sharp source patches (auto-applied)
+│       ├── 00-vssharp-hide-default-explorer.patch
+│       ├── 00-vssharp-default-themes.patch        # color + product-icon defaults
+│       └── 00-vssharp-rider-defaults.patch        # font + sizing + Rider feel
 ├── src/{stable,insider}/                # VSCodium resource overrides (icons, plist)
 ├── vssharp/                             # ⭐ VS Sharp customizations
 │   ├── extend-prepare.sh                # bundles vssharp/extensions/* → vscode/extensions/
 │   ├── install-dotrush.sh               # clones DotRush at pinned commit + builds
-│   ├── dotrush.UPSTREAM.txt             # pin commit hash for DotRush
-│   ├── dotrush.patches/                 # local patches re-applied on each install
+│   ├── dotrush.UPSTREAM.txt             # pinned commit
+│   ├── dotrush.patches/                 # local patches
 │   └── extensions/
 │       ├── dotrush/                     # (gitignored) fetched by install-dotrush.sh
-│       └── vssharp-runner/              # custom extension (launchSettings.json runner)
+│       ├── jetbrains-color-theme/       # fogio color theme bundle (MIT)
+│       ├── jetbrains-product-icon-theme/ # fogio product-icon bundle (MIT)
+│       ├── vssharp-runner/              # custom: launchSettings.json runner
+│       └── vssharp-explorer/            # custom: webview Solution|Files tabs
+│           └── media/icons/fogio/       # fogio file-icon bundle (MIT, ~1.1MB)
 ├── apply-version.sh                     # fix vscode/package.json version
 ├── apply-branding.sh                    # rewrite product.json → "VS Sharp"
 ├── apply-logo.sh <png>                  # embed PNG into 5 SVG slots
@@ -69,18 +81,19 @@ source ./env.local.sh
 
 # Pipeline (~25 min first time)
 . ./get_repo.sh
-. ./prepare_vscode.sh
+. ./prepare_vscode.sh                    # also auto-applies patches/user/*.patch
 ./apply-version.sh
 ./apply-branding.sh
 ./apply-logo.sh /path/to/your-logo.png
 
-# Fetch + build DotRush (pinned in vssharp/dotrush.UPSTREAM.txt)
-./vssharp/install-dotrush.sh
+# Fetch + build 3rd-party extensions (pinned in vssharp/*.UPSTREAM.txt)
+./vssharp/install-dotrush.sh             # ~5 min, needs .NET SDK
 
-# Build vssharp-runner
-( cd vssharp/extensions/vssharp-runner && npm install && npm run compile )
+# Build vssharp-* custom extensions
+( cd vssharp/extensions/vssharp-runner   && npm install && npm run compile )
+( cd vssharp/extensions/vssharp-explorer && npm install && npm run compile )
 
-# Copy bundled extensions into vscode/extensions/
+# Copy all bundled extensions into vscode/extensions/
 ./vssharp/extend-prepare.sh
 
 # Dev — two terminals
@@ -115,16 +128,53 @@ open VSCode-darwin-arm64/VSCodium.app   # name still "VSCodium" until full rebra
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+VS Sharp's own code is **MIT** — see [LICENSE](LICENSE).
 
-VS Sharp redistributes:
-- Microsoft VS Code source (MIT) via VSCodium's rebuild scripts.
-- VSCodium scripts and patches (MIT).
-- DotRush extension (MIT, by [@JaneySprings](https://github.com/JaneySprings)).
-- VS Sharp Runner (MIT, this repo).
+The build pipeline redistributes the following third-party sources. All are
+permissive (MIT). Attribution notices ship inside the relevant subtrees
+(e.g. `vssharp/extensions/vssharp-explorer/media/icons/NOTICE.md`, each
+extension's `LICENSE`).
+
+### Upstream platform
+
+| Source | License | Used as |
+|--------|---------|---------|
+| [Microsoft VS Code](https://github.com/microsoft/vscode) | MIT | base editor — rebuilt from source, pinned via `upstream/stable.json` |
+| [VSCodium](https://github.com/VSCodium/vscodium) | MIT | rebuild scripts + patches (telemetry off, OSS-only branding) |
+| [Electron](https://github.com/electron/electron) | MIT | runtime (bundled by VS Code build) |
+| [Node.js](https://nodejs.org) | MIT | runtime + build toolchain |
+
+### Bundled extensions
+
+| Source | License | Bundle location |
+|--------|---------|-----------------|
+| [JaneySprings/DotRush](https://github.com/JaneySprings/DotRush) | MIT | `vssharp/extensions/dotrush/` (fetched + built by `install-dotrush.sh`, pinned commit in `vssharp/dotrush.UPSTREAM.txt`) |
+| [fogio-org/vscode-jetbrains-product-icon-theme](https://github.com/fogio-org/vscode-jetbrains-product-icon-theme) | MIT | `vssharp/extensions/jetbrains-product-icon-theme/` (raw bundle — set as default via `patches/user/`) |
+| [fogio-org/vscode-jetbrains-color-theme](https://github.com/fogio-org/vscode-jetbrains-color-theme) | MIT | `vssharp/extensions/jetbrains-color-theme/` (raw bundle — set as default dark + light via `patches/user/`) |
+
+### Bundled assets
+
+| Source | License | Bundle location |
+|--------|---------|-----------------|
+| [fogio-org/vscode-jetbrains-file-icon-theme](https://github.com/fogio-org/vscode-jetbrains-file-icon-theme) | MIT | `vssharp/extensions/vssharp-explorer/media/icons/fogio/` — 186 file SVGs + 44 folder SVGs + dark/light theme manifests |
+
+### Custom (this repo)
+
+VS Sharp Runner, VS Sharp Explorer, branding scripts, install scripts, source
+patches in `patches/user/`, dev tooling — all MIT (this repo's `LICENSE`).
+
+### Notes on trademark
+
+Bundled icons are functional glyphs only. **No JetBrains brand assets** (Rider,
+IntelliJ IDEA, ReSharper, JetBrains logos) are redistributed — those are
+trademarks of JetBrains s.r.o. and excluded from all bundles. fogio's icon
+themes follow the same neutral-glyph design principle, matching JetBrains'
+**New UI** visual style without using any protected mark.
 
 ## Acknowledgements
 
-- The **[VSCodium](https://github.com/VSCodium/vscodium)** team for the FLOSS rebuild infrastructure.
-- **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** for the open-source Roslyn-based C# tooling.
+- The **[VSCodium](https://github.com/VSCodium/vscodium)** team for the FLOSS rebuild infrastructure that makes this fork possible.
 - The **VS Code** team for the editor itself (MIT source).
+- **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** for the open-source Roslyn-based C# language server and debugger.
+- **[fogio-org](https://github.com/fogio-org)** for the JetBrains New UI-inspired themes (`vscode-jetbrains-file-icon-theme`, `vscode-jetbrains-product-icon-theme`, `vscode-jetbrains-color-theme`) — the bedrock of VS Sharp's Rider-like appearance.
+- The **JetBrains Mono** font (Apache 2.0) — not bundled, but VS Sharp's default `editor.fontFamily` falls through to it when installed (`brew install --cask font-jetbrains-mono`).

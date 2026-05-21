@@ -1,0 +1,19 @@
+diff --git a/src/vs/workbench/browser/parts/editor/editorTabsControl.ts b/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
+--- a/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
++++ b/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
+@@ -262,5 +262,14 @@
+ 		const editorActionsToolbar = assertReturnsDefined(this.editorActionsToolbar);
+ 		const { primary, secondary } = this.prepareEditorActions(editorActions.actions);
+-		editorActionsToolbar.setActions(prepareActions(primary), prepareActions(secondary));
++		const VSSHARP_KEEP = new Set([
++			'vssharp.runner.runActive',
++			'vssharp.runner.debugActive',
++			'workbench.action.splitEditor',
++			'workbench.action.splitEditorRight',
++			'workbench.action.splitEditorDown',
++			'workbench.action.splitEditorOrthogonal',
++		]);
++		const filter = (actions: readonly IAction[]) => actions.filter(a => VSSHARP_KEEP.has(a.id));
++		editorActionsToolbar.setActions(prepareActions(filter(primary)), prepareActions(filter(secondary)));
+ 	}
+

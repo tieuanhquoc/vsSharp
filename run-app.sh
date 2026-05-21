@@ -11,5 +11,7 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . "${PROJECT_ROOT}/env.local.sh"
 unset NODE_OPTIONS
 
+"${PROJECT_ROOT}/vssharp/extend-prepare.sh"
+
 cd "${PROJECT_ROOT}/vscode"
 exec ./scripts/code.sh "$@"

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; img-src {{cspSource}} https: data:; style-src {{cspSource}} 'unsafe-inline'; script-src 'nonce-{{nonce}}'; connect-src {{cspSource}};" />
+  <meta id="media-base" content="{{mediaBase}}" />
+  <link rel="stylesheet" href="{{cssUri}}" />
+</head>
+<body>
+  <div class="tabs" role="tablist">
+    <button class="tab" data-tab="solution" role="tab" aria-selected="true">Solution</button>
+    <button class="tab" data-tab="files" role="tab" aria-selected="false">Files</button>
+    <button class="tool-btn" id="btn-non-project" title="Show non-project files" aria-pressed="false" style="margin-left:auto">
+      <span class="tool-btn-icon"></span>
+    </button>
+  </div>
+  <div class="panes">
+    <section class="pane" data-tab="solution" role="tabpanel">
+      <div class="tree" id="solution-tree" tabindex="0">Loading…</div>
+    </section>
+    <section class="pane hidden" data-tab="files" role="tabpanel">
+      <div class="tree" id="files-tree" tabindex="0">Loading…</div>
+    </section>
+  </div>
+  <script nonce="{{nonce}}" src="{{jsUri}}"></script>
+</body>
+</html>

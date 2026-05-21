@@ -1,0 +1,30 @@
+diff --git a/src/vs/workbench/contrib/debug/browser/debug.contribution.ts b/src/vs/workbench/contrib/debug/browser/debug.contribution.ts
+index 866c7bc8..81ad9666 100644
+--- a/src/vs/workbench/contrib/debug/browser/debug.contribution.ts
++++ b/src/vs/workbench/contrib/debug/browser/debug.contribution.ts
+@@ -451,20 +451,17 @@ Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([{
+ }], VIEW_CONTAINER);
+ 
+ 
++// VS Sharp: Move debug viewlet to AuxiliaryBar to hide from Activity Bar.
++// Same pattern as explorerViewlet.ts — container must stay registered so
++// views (Variables, Watch, Call Stack, Breakpoints) can still reference it;
++// only the sidebar entry and open-command are suppressed.
+ const viewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
+ 	id: VIEWLET_ID,
+ 	title: nls.localize2('run and debug', "Run and Debug"),
+-	openCommandActionDescriptor: {
+-		id: VIEWLET_ID,
+-		mnemonicTitle: nls.localize({ key: 'miViewRun', comment: ['&& denotes a mnemonic'] }, "&&Run"),
+-		keybindings: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyD },
+-		order: 3
+-	},
+ 	ctorDescriptor: new SyncDescriptor(DebugViewPaneContainer),
+-	icon: icons.runViewIcon,
+ 	alwaysUseContainerInfo: true,
+ 	order: 3,
+-}, ViewContainerLocation.Sidebar);
++}, ViewContainerLocation.AuxiliaryBar, { isDefault: false, doNotRegisterOpenCommand: true });
+ 
+ // Register default debug views
+ const viewsRegistry = Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry);

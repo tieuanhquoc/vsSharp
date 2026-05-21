@@ -1,0 +1,1101 @@
+{
+  "fonts": [
+    {
+      "id": "vssharp-product-icons",
+      "src": [
+        {
+          "path": "./vssharp-product-icons.woff2",
+          "format": "woff2"
+        }
+      ],
+      "style": "normal",
+      "weight": "normal"
+    }
+  ],
+  "iconDefinitions": {
+    "chevron-right": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "chevron-down": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "chevron-up": {
+      "fontCharacter": "\\f177",
+      "fontId": "vssharp-product-icons"
+    },
+    "chevron-left": {
+      "fontCharacter": "\\f179",
+      "fontId": "vssharp-product-icons"
+    },
+    "triangle-right": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "triangle-down": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-right": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-down": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-left": {
+      "fontCharacter": "\\f179",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-up": {
+      "fontCharacter": "\\f177",
+      "fontId": "vssharp-product-icons"
+    },
+    "fold": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "unfold": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "dropdown": {
+      "fontCharacter": "\\f169",
+      "fontId": "vssharp-product-icons"
+    },
+    "close": {
+      "fontCharacter": "\\f175",
+      "fontId": "vssharp-product-icons"
+    },
+    "close-all": {
+      "fontCharacter": "\\f175",
+      "fontId": "vssharp-product-icons"
+    },
+    "chrome-close": {
+      "fontCharacter": "\\f175",
+      "fontId": "vssharp-product-icons"
+    },
+    "close-dirty": {
+      "fontCharacter": "\\f174",
+      "fontId": "vssharp-product-icons"
+    },
+    "add": {
+      "fontCharacter": "\\f187",
+      "fontId": "vssharp-product-icons"
+    },
+    "plus": {
+      "fontCharacter": "\\f187",
+      "fontId": "vssharp-product-icons"
+    },
+    "edit": {
+      "fontCharacter": "\\f167",
+      "fontId": "vssharp-product-icons"
+    },
+    "pencil": {
+      "fontCharacter": "\\f167",
+      "fontId": "vssharp-product-icons"
+    },
+    "trash": {
+      "fontCharacter": "\\f16c",
+      "fontId": "vssharp-product-icons"
+    },
+    "trashcan": {
+      "fontCharacter": "\\f16c",
+      "fontId": "vssharp-product-icons"
+    },
+    "remove": {
+      "fontCharacter": "\\f16c",
+      "fontId": "vssharp-product-icons"
+    },
+    "discard": {
+      "fontCharacter": "\\f122",
+      "fontId": "vssharp-product-icons"
+    },
+    "exit": {
+      "fontCharacter": "\\f162",
+      "fontId": "vssharp-product-icons"
+    },
+    "copy": {
+      "fontCharacter": "\\f171",
+      "fontId": "vssharp-product-icons"
+    },
+    "export": {
+      "fontCharacter": "\\f160",
+      "fontId": "vssharp-product-icons"
+    },
+    "save": {
+      "fontCharacter": "\\f160",
+      "fontId": "vssharp-product-icons"
+    },
+    "import": {
+      "fontCharacter": "\\f151",
+      "fontId": "vssharp-product-icons"
+    },
+    "cloud-download": {
+      "fontCharacter": "\\f16a",
+      "fontId": "vssharp-product-icons"
+    },
+    "desktop-download": {
+      "fontCharacter": "\\f16a",
+      "fontId": "vssharp-product-icons"
+    },
+    "refresh": {
+      "fontCharacter": "\\f128",
+      "fontId": "vssharp-product-icons"
+    },
+    "sync": {
+      "fontCharacter": "\\f128",
+      "fontId": "vssharp-product-icons"
+    },
+    "reload": {
+      "fontCharacter": "\\f128",
+      "fontId": "vssharp-product-icons"
+    },
+    "collapse-all": {
+      "fontCharacter": "\\f173",
+      "fontId": "vssharp-product-icons"
+    },
+    "expand-all": {
+      "fontCharacter": "\\f161",
+      "fontId": "vssharp-product-icons"
+    },
+    "list-tree": {
+      "fontCharacter": "\\f13f",
+      "fontId": "vssharp-product-icons"
+    },
+    "list-flat": {
+      "fontCharacter": "\\f13f",
+      "fontId": "vssharp-product-icons"
+    },
+    "menu": {
+      "fontCharacter": "\\f13f",
+      "fontId": "vssharp-product-icons"
+    },
+    "ellipsis": {
+      "fontCharacter": "\\f13a",
+      "fontId": "vssharp-product-icons"
+    },
+    "more": {
+      "fontCharacter": "\\f13a",
+      "fontId": "vssharp-product-icons"
+    },
+    "kebab-vertical": {
+      "fontCharacter": "\\f139",
+      "fontId": "vssharp-product-icons"
+    },
+    "filter": {
+      "fontCharacter": "\\f15d",
+      "fontId": "vssharp-product-icons"
+    },
+    "target": {
+      "fontCharacter": "\\f144",
+      "fontId": "vssharp-product-icons"
+    },
+    "find": {
+      "fontCharacter": "\\f144",
+      "fontId": "vssharp-product-icons"
+    },
+    "search": {
+      "fontCharacter": "\\f11c",
+      "fontId": "vssharp-product-icons"
+    },
+    "settings": {
+      "fontCharacter": "\\f11a",
+      "fontId": "vssharp-product-icons"
+    },
+    "settings-gear": {
+      "fontCharacter": "\\f11a",
+      "fontId": "vssharp-product-icons"
+    },
+    "gear": {
+      "fontCharacter": "\\f11a",
+      "fontId": "vssharp-product-icons"
+    },
+    "help": {
+      "fontCharacter": "\\f155",
+      "fontId": "vssharp-product-icons"
+    },
+    "question": {
+      "fontCharacter": "\\f155",
+      "fontId": "vssharp-product-icons"
+    },
+    "history": {
+      "fontCharacter": "\\f153",
+      "fontId": "vssharp-product-icons"
+    },
+    "eye-closed": {
+      "fontCharacter": "\\f154",
+      "fontId": "vssharp-product-icons"
+    },
+    "list-flat-stacked": {
+      "fontCharacter": "\\f145",
+      "fontId": "vssharp-product-icons"
+    },
+    "list-unordered": {
+      "fontCharacter": "\\f145",
+      "fontId": "vssharp-product-icons"
+    },
+    "group-by-ref-type": {
+      "fontCharacter": "\\f156",
+      "fontId": "vssharp-product-icons"
+    },
+    "folder": {
+      "fontCharacter": "\\f159",
+      "fontId": "vssharp-product-icons"
+    },
+    "folder-opened": {
+      "fontCharacter": "\\f159",
+      "fontId": "vssharp-product-icons"
+    },
+    "folder-library": {
+      "fontCharacter": "\\f146",
+      "fontId": "vssharp-product-icons"
+    },
+    "folder-active": {
+      "fontCharacter": "\\f159",
+      "fontId": "vssharp-product-icons"
+    },
+    "package": {
+      "fontCharacter": "\\f133",
+      "fontId": "vssharp-product-icons"
+    },
+    "archive": {
+      "fontCharacter": "\\f133",
+      "fontId": "vssharp-product-icons"
+    },
+    "library": {
+      "fontCharacter": "\\f147",
+      "fontId": "vssharp-product-icons"
+    },
+    "file-zip": {
+      "fontCharacter": "\\f133",
+      "fontId": "vssharp-product-icons"
+    },
+    "symbol-namespace": {
+      "fontCharacter": "\\f13b",
+      "fontId": "vssharp-product-icons"
+    },
+    "symbol-class": {
+      "fontCharacter": "\\f176",
+      "fontId": "vssharp-product-icons"
+    },
+    "symbol-method": {
+      "fontCharacter": "\\f13d",
+      "fontId": "vssharp-product-icons"
+    },
+    "symbol-function": {
+      "fontCharacter": "\\f13d",
+      "fontId": "vssharp-product-icons"
+    },
+    "star-full": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "star": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "star-empty": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "star-half": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle-outline": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle-large-outline": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle-filled": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle-large-filled": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "primitive-square": {
+      "fontCharacter": "\\f115",
+      "fontId": "vssharp-product-icons"
+    },
+    "dot": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "play": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "play-circle": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "run": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "run-all": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "run-above": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "run-below": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug": {
+      "fontCharacter": "\\f16d",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-alt": {
+      "fontCharacter": "\\f16d",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-alt-small": {
+      "fontCharacter": "\\f16d",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-start": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-continue": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-pause": {
+      "fontCharacter": "\\f132",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-stop": {
+      "fontCharacter": "\\f114",
+      "fontId": "vssharp-product-icons"
+    },
+    "stop": {
+      "fontCharacter": "\\f114",
+      "fontId": "vssharp-product-icons"
+    },
+    "stop-circle": {
+      "fontCharacter": "\\f114",
+      "fontId": "vssharp-product-icons"
+    },
+    "circle-slash": {
+      "fontCharacter": "\\f114",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-restart": {
+      "fontCharacter": "\\f121",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-restart-frame": {
+      "fontCharacter": "\\f121",
+      "fontId": "vssharp-product-icons"
+    },
+    "restart": {
+      "fontCharacter": "\\f121",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-rerun": {
+      "fontCharacter": "\\f123",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-kill": {
+      "fontCharacter": "\\f149",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-disconnect": {
+      "fontCharacter": "\\f149",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-step-into": {
+      "fontCharacter": "\\f183",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-step-over": {
+      "fontCharacter": "\\f183",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-step-out": {
+      "fontCharacter": "\\f183",
+      "fontId": "vssharp-product-icons"
+    },
+    "thread": {
+      "fontCharacter": "\\f168",
+      "fontId": "vssharp-product-icons"
+    },
+    "compass": {
+      "fontCharacter": "\\f12d",
+      "fontId": "vssharp-product-icons"
+    },
+    "error": {
+      "fontCharacter": "\\f165",
+      "fontId": "vssharp-product-icons"
+    },
+    "error-small": {
+      "fontCharacter": "\\f165",
+      "fontId": "vssharp-product-icons"
+    },
+    "warning": {
+      "fontCharacter": "\\f104",
+      "fontId": "vssharp-product-icons"
+    },
+    "alert": {
+      "fontCharacter": "\\f104",
+      "fontId": "vssharp-product-icons"
+    },
+    "info": {
+      "fontCharacter": "\\f14f",
+      "fontId": "vssharp-product-icons"
+    },
+    "lightbulb": {
+      "fontCharacter": "\\f14f",
+      "fontId": "vssharp-product-icons"
+    },
+    "pass-filled": {
+      "fontCharacter": "\\f113",
+      "fontId": "vssharp-product-icons"
+    },
+    "pass": {
+      "fontCharacter": "\\f113",
+      "fontId": "vssharp-product-icons"
+    },
+    "check": {
+      "fontCharacter": "\\f17b",
+      "fontId": "vssharp-product-icons"
+    },
+    "check-all": {
+      "fontCharacter": "\\f17b",
+      "fontId": "vssharp-product-icons"
+    },
+    "verified": {
+      "fontCharacter": "\\f17b",
+      "fontId": "vssharp-product-icons"
+    },
+    "verified-filled": {
+      "fontCharacter": "\\f17b",
+      "fontId": "vssharp-product-icons"
+    },
+    "extensions": {
+      "fontCharacter": "\\f130",
+      "fontId": "vssharp-product-icons"
+    },
+    "plug": {
+      "fontCharacter": "\\f130",
+      "fontId": "vssharp-product-icons"
+    },
+    "files": {
+      "fontCharacter": "\\f10a",
+      "fontId": "vssharp-product-icons"
+    },
+    "explorer-view-icon": {
+      "fontCharacter": "\\f10a",
+      "fontId": "vssharp-product-icons"
+    },
+    "source-control": {
+      "fontCharacter": "\\f10e",
+      "fontId": "vssharp-product-icons"
+    },
+    "source-control-view-icon": {
+      "fontCharacter": "\\f10e",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-commit": {
+      "fontCharacter": "\\f10e",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-pull-request": {
+      "fontCharacter": "\\f10e",
+      "fontId": "vssharp-product-icons"
+    },
+    "run-view-icon": {
+      "fontCharacter": "\\f109",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-console-view-icon": {
+      "fontCharacter": "\\f10d",
+      "fontId": "vssharp-product-icons"
+    },
+    "callhierarchy-view-icon": {
+      "fontCharacter": "\\f108",
+      "fontId": "vssharp-product-icons"
+    },
+    "symbol-structure": {
+      "fontCharacter": "\\f108",
+      "fontId": "vssharp-product-icons"
+    },
+    "outline-view-icon": {
+      "fontCharacter": "\\f108",
+      "fontId": "vssharp-product-icons"
+    },
+    "warning-view-icon": {
+      "fontCharacter": "\\f10b",
+      "fontId": "vssharp-product-icons"
+    },
+    "test-view-icon": {
+      "fontCharacter": "\\f10f",
+      "fontId": "vssharp-product-icons"
+    },
+    "notifications-view-icon": {
+      "fontCharacter": "\\f10c",
+      "fontId": "vssharp-product-icons"
+    },
+    "extensions-view-icon": {
+      "fontCharacter": "\\f130",
+      "fontId": "vssharp-product-icons"
+    },
+    "add-small": {
+      "fontCharacter": "\\f187",
+      "fontId": "vssharp-product-icons"
+    },
+    "array": {
+      "fontCharacter": "\\f185",
+      "fontId": "vssharp-product-icons"
+    },
+    "attach": {
+      "fontCharacter": "\\f184",
+      "fontId": "vssharp-product-icons"
+    },
+    "book": {
+      "fontCharacter": "\\f182",
+      "fontId": "vssharp-product-icons"
+    },
+    "bookmark": {
+      "fontCharacter": "\\f182",
+      "fontId": "vssharp-product-icons"
+    },
+    "browser": {
+      "fontCharacter": "\\f17f",
+      "fontId": "vssharp-product-icons"
+    },
+    "build": {
+      "fontCharacter": "\\f17e",
+      "fontId": "vssharp-product-icons"
+    },
+    "coverage": {
+      "fontCharacter": "\\f170",
+      "fontId": "vssharp-product-icons"
+    },
+    "cursor": {
+      "fontCharacter": "\\f16f",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-all": {
+      "fontCharacter": "\\f16d",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-hint": {
+      "fontCharacter": "\\f16d",
+      "fontId": "vssharp-product-icons"
+    },
+    "diff": {
+      "fontCharacter": "\\f16b",
+      "fontId": "vssharp-product-icons"
+    },
+    "diff-added": {
+      "fontCharacter": "\\f16b",
+      "fontId": "vssharp-product-icons"
+    },
+    "diff-single": {
+      "fontCharacter": "\\f16b",
+      "fontId": "vssharp-product-icons"
+    },
+    "download": {
+      "fontCharacter": "\\f16a",
+      "fontId": "vssharp-product-icons"
+    },
+    "drop-down-button": {
+      "fontCharacter": "\\f169",
+      "fontId": "vssharp-product-icons"
+    },
+    "edit-code": {
+      "fontCharacter": "\\f167",
+      "fontId": "vssharp-product-icons"
+    },
+    "empty-window": {
+      "fontCharacter": "\\f166",
+      "fontId": "vssharp-product-icons"
+    },
+    "exclude": {
+      "fontCharacter": "\\f164",
+      "fontId": "vssharp-product-icons"
+    },
+    "feedback": {
+      "fontCharacter": "\\f15f",
+      "fontId": "vssharp-product-icons"
+    },
+    "file": {
+      "fontCharacter": "\\f12d",
+      "fontId": "vssharp-product-icons"
+    },
+    "filter-filled": {
+      "fontCharacter": "\\f15d",
+      "fontId": "vssharp-product-icons"
+    },
+    "fold-down": {
+      "fontCharacter": "\\f15a",
+      "fontId": "vssharp-product-icons"
+    },
+    "fold-up": {
+      "fontCharacter": "\\f15a",
+      "fontId": "vssharp-product-icons"
+    },
+    "forward": {
+      "fontCharacter": "\\f15b",
+      "fontId": "vssharp-product-icons"
+    },
+    "gift": {
+      "fontCharacter": "\\f158",
+      "fontId": "vssharp-product-icons"
+    },
+    "globe": {
+      "fontCharacter": "\\f14e",
+      "fontId": "vssharp-product-icons"
+    },
+    "graph": {
+      "fontCharacter": "\\f157",
+      "fontId": "vssharp-product-icons"
+    },
+    "home": {
+      "fontCharacter": "\\f152",
+      "fontId": "vssharp-product-icons"
+    },
+    "inspect": {
+      "fontCharacter": "\\f14c",
+      "fontId": "vssharp-product-icons"
+    },
+    "json": {
+      "fontCharacter": "\\f14b",
+      "fontId": "vssharp-product-icons"
+    },
+    "key": {
+      "fontCharacter": "\\f14a",
+      "fontId": "vssharp-product-icons"
+    },
+    "keyboard": {
+      "fontCharacter": "\\f14a",
+      "fontId": "vssharp-product-icons"
+    },
+    "keyboard-tab": {
+      "fontCharacter": "\\f14a",
+      "fontId": "vssharp-product-icons"
+    },
+    "layout": {
+      "fontCharacter": "\\f148",
+      "fontId": "vssharp-product-icons"
+    },
+    "layout-panel": {
+      "fontCharacter": "\\f148",
+      "fontId": "vssharp-product-icons"
+    },
+    "link": {
+      "fontCharacter": "\\f186",
+      "fontId": "vssharp-product-icons"
+    },
+    "lock": {
+      "fontCharacter": "\\f143",
+      "fontId": "vssharp-product-icons"
+    },
+    "lock-small": {
+      "fontCharacter": "\\f143",
+      "fontId": "vssharp-product-icons"
+    },
+    "markdown": {
+      "fontCharacter": "\\f142",
+      "fontId": "vssharp-product-icons"
+    },
+    "mcp": {
+      "fontCharacter": "\\f140",
+      "fontId": "vssharp-product-icons"
+    },
+    "merge": {
+      "fontCharacter": "\\f13e",
+      "fontId": "vssharp-product-icons"
+    },
+    "merge-into": {
+      "fontCharacter": "\\f13e",
+      "fontId": "vssharp-product-icons"
+    },
+    "move": {
+      "fontCharacter": "\\f138",
+      "fontId": "vssharp-product-icons"
+    },
+    "new-folder": {
+      "fontCharacter": "\\f137",
+      "fontId": "vssharp-product-icons"
+    },
+    "newline": {
+      "fontCharacter": "\\f136",
+      "fontId": "vssharp-product-icons"
+    },
+    "openai": {
+      "fontCharacter": "\\f134",
+      "fontId": "vssharp-product-icons"
+    },
+    "pin": {
+      "fontCharacter": "\\f131",
+      "fontId": "vssharp-product-icons"
+    },
+    "pinned": {
+      "fontCharacter": "\\f131",
+      "fontId": "vssharp-product-icons"
+    },
+    "preserve-case": {
+      "fontCharacter": "\\f12f",
+      "fontId": "vssharp-product-icons"
+    },
+    "preview": {
+      "fontCharacter": "\\f12e",
+      "fontId": "vssharp-product-icons"
+    },
+    "project": {
+      "fontCharacter": "\\f12c",
+      "fontId": "vssharp-product-icons"
+    },
+    "record": {
+      "fontCharacter": "\\f12b",
+      "fontId": "vssharp-product-icons"
+    },
+    "record-keys": {
+      "fontCharacter": "\\f12b",
+      "fontId": "vssharp-product-icons"
+    },
+    "record-small": {
+      "fontCharacter": "\\f12b",
+      "fontId": "vssharp-product-icons"
+    },
+    "redo": {
+      "fontCharacter": "\\f12a",
+      "fontId": "vssharp-product-icons"
+    },
+    "regex": {
+      "fontCharacter": "\\f127",
+      "fontId": "vssharp-product-icons"
+    },
+    "remove-close": {
+      "fontCharacter": "\\f126",
+      "fontId": "vssharp-product-icons"
+    },
+    "remove-small": {
+      "fontCharacter": "\\f126",
+      "fontId": "vssharp-product-icons"
+    },
+    "repl": {
+      "fontCharacter": "\\f125",
+      "fontId": "vssharp-product-icons"
+    },
+    "replace": {
+      "fontCharacter": "\\f125",
+      "fontId": "vssharp-product-icons"
+    },
+    "replace-all": {
+      "fontCharacter": "\\f125",
+      "fontId": "vssharp-product-icons"
+    },
+    "repo": {
+      "fontCharacter": "\\f124",
+      "fontId": "vssharp-product-icons"
+    },
+    "report": {
+      "fontCharacter": "\\f124",
+      "fontId": "vssharp-product-icons"
+    },
+    "run-errors": {
+      "fontCharacter": "\\f11e",
+      "fontId": "vssharp-product-icons"
+    },
+    "save-all": {
+      "fontCharacter": "\\f11d",
+      "fontId": "vssharp-product-icons"
+    },
+    "save-as": {
+      "fontCharacter": "\\f11d",
+      "fontId": "vssharp-product-icons"
+    },
+    "search-fuzzy": {
+      "fontCharacter": "\\f11c",
+      "fontId": "vssharp-product-icons"
+    },
+    "search-large": {
+      "fontCharacter": "\\f11c",
+      "fontId": "vssharp-product-icons"
+    },
+    "search-save": {
+      "fontCharacter": "\\f11c",
+      "fontId": "vssharp-product-icons"
+    },
+    "search-stop": {
+      "fontCharacter": "\\f11c",
+      "fontId": "vssharp-product-icons"
+    },
+    "selection": {
+      "fontCharacter": "\\f150",
+      "fontId": "vssharp-product-icons"
+    },
+    "server": {
+      "fontCharacter": "\\f11b",
+      "fontId": "vssharp-product-icons"
+    },
+    "share": {
+      "fontCharacter": "\\f119",
+      "fontId": "vssharp-product-icons"
+    },
+    "split-horizontal": {
+      "fontCharacter": "\\f118",
+      "fontId": "vssharp-product-icons"
+    },
+    "split-vertical": {
+      "fontCharacter": "\\f117",
+      "fontId": "vssharp-product-icons"
+    },
+    "star-add": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "star-delete": {
+      "fontCharacter": "\\f116",
+      "fontId": "vssharp-product-icons"
+    },
+    "table": {
+      "fontCharacter": "\\f16e",
+      "fontId": "vssharp-product-icons"
+    },
+    "tag": {
+      "fontCharacter": "\\f112",
+      "fontId": "vssharp-product-icons"
+    },
+    "tag-add": {
+      "fontCharacter": "\\f112",
+      "fontId": "vssharp-product-icons"
+    },
+    "tag-remove": {
+      "fontCharacter": "\\f112",
+      "fontId": "vssharp-product-icons"
+    },
+    "tasklist": {
+      "fontCharacter": "\\f111",
+      "fontId": "vssharp-product-icons"
+    },
+    "text-size": {
+      "fontCharacter": "\\f110",
+      "fontId": "vssharp-product-icons"
+    },
+    "unlock": {
+      "fontCharacter": "\\f107",
+      "fontId": "vssharp-product-icons"
+    },
+    "variable": {
+      "fontCharacter": "\\f105",
+      "fontId": "vssharp-product-icons"
+    },
+    "variable-group": {
+      "fontCharacter": "\\f105",
+      "fontId": "vssharp-product-icons"
+    },
+    "watch": {
+      "fontCharacter": "\\f103",
+      "fontId": "vssharp-product-icons"
+    },
+    "x": {
+      "fontCharacter": "\\f175",
+      "fontId": "vssharp-product-icons"
+    },
+    "zoom-in": {
+      "fontCharacter": "\\f102",
+      "fontId": "vssharp-product-icons"
+    },
+    "zoom-out": {
+      "fontCharacter": "\\f101",
+      "fontId": "vssharp-product-icons"
+    },
+    "tree-item-expanded": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "tree-item-loading": {
+      "fontCharacter": "\\f128",
+      "fontId": "vssharp-product-icons"
+    },
+    "auxiliarybar-maximize": {
+      "fontCharacter": "\\f161",
+      "fontId": "vssharp-product-icons"
+    },
+    "panel-maximize": {
+      "fontCharacter": "\\f161",
+      "fontId": "vssharp-product-icons"
+    },
+    "bell": {
+      "fontCharacter": "\\f135",
+      "fontId": "vssharp-product-icons"
+    },
+    "bell-dot": {
+      "fontCharacter": "\\f135",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-branch": {
+      "fontCharacter": "\\f181",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-branch-create": {
+      "fontCharacter": "\\f181",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-branch-delete": {
+      "fontCharacter": "\\f181",
+      "fontId": "vssharp-product-icons"
+    },
+    "chrome-maximize": {
+      "fontCharacter": "\\f141",
+      "fontId": "vssharp-product-icons"
+    },
+    "chrome-minimize": {
+      "fontCharacter": "\\f13c",
+      "fontId": "vssharp-product-icons"
+    },
+    "chrome-restore": {
+      "fontCharacter": "\\f120",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-small-up": {
+      "fontCharacter": "\\f177",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-small-down": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-small-left": {
+      "fontCharacter": "\\f179",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-small-right": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-circle-up": {
+      "fontCharacter": "\\f177",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-circle-down": {
+      "fontCharacter": "\\f17a",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-circle-left": {
+      "fontCharacter": "\\f179",
+      "fontId": "vssharp-product-icons"
+    },
+    "arrow-circle-right": {
+      "fontCharacter": "\\f178",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-fetch": {
+      "fontCharacter": "\\f15e",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-compare": {
+      "fontCharacter": "\\f17c",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-stash": {
+      "fontCharacter": "\\f17d",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-stash-pop": {
+      "fontCharacter": "\\f17d",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-pull-request-closed": {
+      "fontCharacter": "\\f13e",
+      "fontId": "vssharp-product-icons"
+    },
+    "git-pull-request-draft": {
+      "fontCharacter": "\\f13e",
+      "fontId": "vssharp-product-icons"
+    },
+    "compare-changes": {
+      "fontCharacter": "\\f17c",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-coverage": {
+      "fontCharacter": "\\f170",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-step-back": {
+      "fontCharacter": "\\f15c",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-line-by-line": {
+      "fontCharacter": "\\f163",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-breakpoint-conditional": {
+      "fontCharacter": "\\f180",
+      "fontId": "vssharp-product-icons"
+    },
+    "debug-breakpoint-log": {
+      "fontCharacter": "\\f180",
+      "fontId": "vssharp-product-icons"
+    },
+    "activate-breakpoints": {
+      "fontCharacter": "\\f180",
+      "fontId": "vssharp-product-icons"
+    },
+    "bracket-error": {
+      "fontCharacter": "\\f165",
+      "fontId": "vssharp-product-icons"
+    },
+    "bracket-dot": {
+      "fontCharacter": "\\f13a",
+      "fontId": "vssharp-product-icons"
+    },
+    "pinned-dirty": {
+      "fontCharacter": "\\f131",
+      "fontId": "vssharp-product-icons"
+    },
+    "cloud": {
+      "fontCharacter": "\\f172",
+      "fontId": "vssharp-product-icons"
+    },
+    "cloud-upload": {
+      "fontCharacter": "\\f106",
+      "fontId": "vssharp-product-icons"
+    },
+    "beaker": {
+      "fontCharacter": "\\f11f",
+      "fontId": "vssharp-product-icons"
+    },
+    "beaker-stop": {
+      "fontCharacter": "\\f114",
+      "fontId": "vssharp-product-icons"
+    },
+    "comment": {
+      "fontCharacter": "\\f14d",
+      "fontId": "vssharp-product-icons"
+    },
+    "comment-discussion": {
+      "fontCharacter": "\\f14d",
+      "fontId": "vssharp-product-icons"
+    },
+    "code": {
+      "fontCharacter": "\\f129",
+      "fontId": "vssharp-product-icons"
+    },
+    "code-block": {
+      "fontCharacter": "\\f129",
+      "fontId": "vssharp-product-icons"
+    }
+  }
+}

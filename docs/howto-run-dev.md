@@ -7,6 +7,11 @@ Bao gồm:
 - **Branding** "VS Sharp" + logo C# (purple) thay cho VSCodium
 - **DotRush** (Roslyn LSP + debugger, MIT) — vendored làm built-in extension
 - **VS Sharp Runner** — extension custom đọc `Properties/launchSettings.json`, multi-project run/debug song song giống Rider
+- **VS Sharp Explorer** — webview tab "Solution | Files" custom với icon JetBrains-style (fogio file-icon-theme). Thay thế default Explorer của VS Code.
+- **JetBrains Product Icon Theme** (fogio, MIT) — set làm default cho VS Sharp UI
+- **JetBrains Color Theme** (fogio, MIT) — set làm default color theme dark + light
+- **Rider-like default settings** — font JetBrains Mono, lineHeight 1.5, breadcrumbs on, tree indent 16, auto-save, custom title bar, etc.
+- **Patches `patches/user/`** — hide default Explorer, set theme defaults, register Rider settings. Auto-applied bởi `prepare_vscode.sh`.
 
 > Đã verify trên **macOS arm64** · Node 22.22.1 · Python 3.11.15 (venv) · .NET SDK 8/9/10 · MS vscode @ `560a9dba` (tag 1.116.0).
 
@@ -54,20 +59,19 @@ cd /Users/tieuanhquoc/Files/H_Source_code/vscodium
 ```bash
 source ./env.local.sh
 . ./get_repo.sh                                    # clone microsoft/vscode @ pin (~1GB)
-. ./prepare_vscode.sh                              # ~50 patches + npm ci (10–30 phút)
+. ./prepare_vscode.sh                              # ~50 patches + patches/user/* + npm ci (10–30 phút)
 ./apply-version.sh                                 # fix package.json version
 ./apply-branding.sh                                # VSCodium → VS Sharp
 ./apply-logo.sh /path/to/logo.png                  # 5 SVG (workbench + letterpress 4 themes)
 
-# Fetch + build DotRush (cần .NET SDK). Pinned commit ở vssharp/dotrush.UPSTREAM.txt
-./vssharp/install-dotrush.sh
+# Fetch + build 3rd-party extensions (pin commits in vssharp/*.UPSTREAM.txt)
+./vssharp/install-dotrush.sh             # cần .NET SDK
 
-# Build vssharp-runner
-( cd vssharp/extensions/vssharp-runner \
-  && npm install \
-  && npm run compile )
+# Build vssharp-* extensions
+( cd vssharp/extensions/vssharp-runner   && npm install && npm run compile )
+( cd vssharp/extensions/vssharp-explorer && npm install && npm run compile )
 
-# Bundle tất cả vssharp/extensions/* vào vscode/extensions/
+# Bundle tất cả vssharp/extensions/* (gồm jetbrains-product-icon-theme) vào vscode/extensions/
 ./vssharp/extend-prepare.sh
 ```
 
@@ -82,6 +86,7 @@ source ./env.local.sh
 | `apply-version.sh` | Fix `vscode/package.json` + Info.plist version từ `upstream/stable.json` |
 | `apply-branding.sh` | Override `vscode/product.json` thành "VS Sharp" / `vssharp` / `com.vssharp` |
 | `apply-logo.sh <png>` | Embed PNG vào 5 SVG (workbench `code-icon.svg` + 4 letterpress) |
+| `patches/user/*.patch` | VS Sharp source patches auto-applied bởi `prepare_vscode.sh`: hide default Explorer, default `productIconTheme` |
 | `vssharp/extend-prepare.sh` | Copy `vssharp/extensions/*` → `vscode/extensions/*` |
 | `.venv/` | Python 3.11 isolated |
 
@@ -92,34 +97,41 @@ Tất cả script đều **idempotent** — re-run an toàn.
 ## Cấu trúc
 
 ```
-vscodium/                                     ← project root
-├── upstream/{stable,insider}.json            ← pin commit MS vscode
-├── patches/                                  ← VSCodium patches (~50 file)
-├── src/{stable,insider}/                     ← VSCodium resource overrides (icons app)
-├── vscode/                                   ← MS vscode source + patches applied (~3GB)
-├── vssharp/                                  ← VS Sharp customizations
-│   ├── extend-prepare.sh                     ← bundle vào vscode/extensions/
+vscodium/                                       ← project root
+├── upstream/{stable,insider}.json              ← pin commit MS vscode
+├── patches/                                    ← VSCodium patches (~50 file)
+│   └── user/                                   ← VS Sharp source patches (auto-applied)
+│       ├── 00-vssharp-hide-default-explorer.patch
+│       ├── 00-vssharp-default-themes.patch
+│       └── 00-vssharp-rider-defaults.patch     ← font + sizing + Rider feel
+├── src/{stable,insider}/                       ← VSCodium resource overrides (icons app)
+├── vscode/                                     ← MS vscode source + patches applied (~3GB)
+├── vssharp/                                    ← VS Sharp customizations
+│   ├── extend-prepare.sh                       ← bundle vào vscode/extensions/
+│   ├── install-dotrush.sh                      ← clone + build DotRush
+│   ├── dotrush.UPSTREAM.txt                    ← pin commit DotRush
+│   ├── dotrush.patches/                        ← DotRush local patches
 │   └── extensions/
-│       ├── dotrush/                          ← vendored DotRush (122MB src + 185MB built)
-│       │   ├── src/VSCode/                   ← TS extension code
-│       │   ├── src/DotRush.Roslyn.*/         ← C# LSP server
-│       │   ├── src/DotRush.Debugging.*/      ← Debugger (Mono debugger fork)
-│       │   ├── extension/                    ← built output (main.js + binaries)
+│       ├── dotrush/                            ← vendored (gitignored, ~185MB built)
+│       ├── jetbrains-product-icon-theme/       ← fogio product-icon (~200KB)
+│       │   ├── producticons/*.{json,woff2}
 │       │   └── package.json
-│       ├── dotrush.UPSTREAM.txt              ← upstream commit hash
-│       └── vssharp-runner/                   ← custom extension
-│           ├── src/                          ← TypeScript (modular, <200 LOC/file)
-│           │   ├── main.ts                   ← activate, commands
-│           │   ├── launch-settings.ts        ← discover + parse launchSettings.json
-│           │   ├── profile-store.ts          ← persisted state (global + per-project)
-│           │   ├── profile-runner.ts         ← build task + debug config
-│           │   ├── profile-tree.ts           ← TreeView sidebar
-│           │   ├── session-manager.ts        ← concurrent sessions
-│           │   └── running-status-bar.ts     ← count chỉ báo
-│           └── extension/main.js             ← webpack output
-├── docs/howto-run-dev.md                     ← FILE NÀY
-├── apply-*.sh, env.local.sh, run-app.sh      ← helpers
-└── .venv/                                    ← Python 3.11
+│       ├── jetbrains-color-theme/              ← fogio color theme dark+light (~290KB)
+│       │   └── themes/*-jetbrains-color-theme.json
+│       ├── vssharp-runner/                     ← custom: launchSettings.json runner
+│       └── vssharp-explorer/                   ← custom: webview Solution|Files tabs
+│           ├── src/{main,webview-provider,file-system,sln-parser,csproj-parser}.ts
+│           └── media/
+│               ├── {index.html,main.css,main.js}
+│               └── icons/
+│                   ├── NOTICE.md               ← attribution
+│                   └── fogio/                  ← file-icon bundle (~1.1MB, MIT)
+│                       ├── {dark,light}.json   ← theme manifests
+│                       ├── file/*.svg          ← 186 file icons
+│                       └── folder/*.svg        ← 44 folder icons
+├── docs/howto-run-dev.md                       ← FILE NÀY
+├── apply-*.sh, env.local.sh, run-app.sh        ← helpers
+└── .venv/                                      ← Python 3.11
 ```
 
 ---
@@ -265,16 +277,150 @@ cd ../../..
 
 ---
 
+## Extension #3 — VS Sharp Explorer (webview Solution | Files)
+
+Custom extension webview-based với 2 tab kiểu Rider: **Solution** (parse `.sln`/`.slnx` self-implemented, show solution folder + project nodes, expand project → list source files) và **Files** (workspace file tree).
+
+### Icon system
+
+Webview render icons qua **background-image SVG**. Bundle:
+- `media/icons/fogio/` — full bundle của [fogio-org/vscode-jetbrains-file-icon-theme](https://github.com/fogio-org/vscode-jetbrains-file-icon-theme) (MIT, ~1.1MB):
+  - 186 file icons + 44 folder icons (light + dark variants)
+  - `dark.json` + `light.json` — theme manifests với `fileExtensions` / `fileNames` / `folderNames` → `iconDefinitions` mapping
+- Aliases cho extensions fogio thiếu: `slnx→sln`, `fsproj/vbproj/vcxproj→csproj`, `aspx/ascx/vbhtml→cshtml`
+
+Runtime:
+- Boot: webview `fetch()` JSON theme tương ứng theme hiện tại (dark/light)
+- Render: lookup extension → iconPath, set inline `background-image`
+- Theme switch: MutationObserver trên `body.class` → re-load JSON + re-resolve mọi icon (no DOM rebuild)
+- CSP cần `connect-src {{cspSource}}` để `fetch()` qua webview resource handler
+
+### Webview kiến trúc
+- `src/sln-parser.ts` — regex `.sln` Project() entries + NestedProjects + `.slnx` XML root projects
+- `src/csproj-parser.ts` — extract `TargetFramework(s)`, `OutputType`, `PackageReference`, `ProjectReference` (hiện tại không gọi từ webview, để cho Phase 3 References subnode)
+- `src/file-system.ts` — `listWorkspaceRoots`, `listDirectory` với hiddenPatterns config
+- `src/webview-provider.ts` — message dispatcher + CSP + asWebviewUri cho media base
+- `media/main.js` — tabs/tree render, icon dispatch
+- `media/main.css` — `.icon` là 16x16 block với background-image, không emoji
+
+### Custom
+
+```bash
+cd vssharp/extensions/vssharp-explorer
+# Edit src/*.ts hoặc media/{main.js,main.css,index.html}
+npm run compile          # webpack copy media/* → extension/media/*
+cd ../../..
+./vssharp/extend-prepare.sh
+# Cmd+R reload window
+```
+
+### Limitations
+- Folder dùng cùng icon cho open/closed (fogio cũng không có `folder_opened` variant cho hầu hết folder types)
+- File `.csproj` không render inline metadata (TF/Packages/Refs) — Phase 3 sẽ thêm "References" subnode kiểu solution-explorer
+- `.ts` fallback sang icon JS (fogio JSON map `ts` → typescript, OK)
+- Activity bar icon hiện dùng codicon `window`, chưa custom
+
+---
+
+## Extension #4 — JetBrains Product Icon Theme (built-in default)
+
+Bundle từ [fogio-org/vscode-jetbrains-product-icon-theme](https://github.com/fogio-org/vscode-jetbrains-product-icon-theme) (MIT). Set làm default cho VS Sharp qua patch `patches/user/00-vssharp-default-themes.patch` (sửa `ThemeSettingDefaults.PRODUCT_ICON_THEME`).
+
+User có thể đổi qua Settings > `workbench.productIconTheme`.
+
+Bundle ~200KB: `producticons/jetbrains-product-icon-theme.{json,woff2}` + package.json + LICENSE + assets/img/icon.png.
+
+---
+
+## Extension #5 — JetBrains Color Theme (built-in default)
+
+Bundle từ [fogio-org/vscode-jetbrains-color-theme](https://github.com/fogio-org/vscode-jetbrains-color-theme) (MIT). 2 themes:
+- `dark-jetbrains-color-theme` — set làm default dark theme
+- `light-jetbrains-color-theme` — set làm default light theme
+
+Set qua cùng patch `patches/user/00-vssharp-default-themes.patch` (sửa `ThemeSettingDefaults.COLOR_THEME_DARK` + `COLOR_THEME_LIGHT`).
+
+User có thể đổi qua Settings > `workbench.colorTheme` hoặc Command Palette > "Preferences: Color Theme".
+
+Bundle ~290KB: `themes/{dark,light}-jetbrains-color-theme.json` + package.json + LICENSE.
+
+---
+
+## Rider-like settings defaults (`vssharp.defaults.ts`)
+
+Patch `patches/user/00-vssharp-rider-defaults.patch` thêm file `vscode/src/vs/workbench/vssharp.defaults.ts` đăng ký ~40 default overrides cho settings để VS Sharp feel giống Rider out-of-box. Loaded via import từ `workbench.common.main.ts`. Sample:
+
+**Editor (typography + behavior):**
+- `editor.fontFamily`: `'JetBrains Mono', Menlo, Monaco, ...`
+- `editor.fontSize`: 13, `editor.lineHeight`: 1.5, `editor.fontLigatures`: true
+- `editor.cursorSmoothCaretAnimation`: 'on', `editor.smoothScrolling`: true
+- `editor.guides.indentation`: true, `editor.guides.bracketPairs`: 'active'
+- `editor.stickyScroll.enabled`: true
+- `editor.minimap.enabled`: false (Rider không có minimap mặc định)
+- `editor.suggestSelection`: 'first', `editor.tabCompletion`: 'on'
+
+**Workbench:**
+- `workbench.tree.indent`: 16, `workbench.tree.renderIndentGuides`: 'always'
+- `workbench.tree.expandMode`: 'singleClick'
+- `workbench.editor.tabSizing`: 'fit', `workbench.editor.enablePreview`: false
+- `workbench.layoutControl.enabled`: false
+
+**Window (Rider chrome):**
+- `window.commandCenter`: false, `window.menuBarVisibility`: 'classic'
+- `window.titleBarStyle`: 'custom'
+
+**Breadcrumbs:** `breadcrumbs.enabled`: true (Rider navigation bar)
+
+**Files:** `files.autoSave`: 'afterDelay' (500ms), trim whitespace, insert final newline
+
+**Terminal:** font JetBrains Mono 13px, cursor blinking, smooth scrolling
+
+User vẫn override được mọi key qua `settings.json` (defaults là tầng thấp nhất trong settings precedence).
+
+**Bổ sung font:** JetBrains Mono KHÔNG được bundle trong VS Sharp (font hơi nặng + licensing). Nếu user không cài, fallback về Menlo/Monaco. Cài qua:
+```bash
+brew install --cask font-jetbrains-mono
+```
+
+---
+
+## Source patches (`patches/user/`)
+
+VSCodium's `prepare_vscode.sh` auto-applies mọi `.patch` trong `patches/user/`. VS Sharp dùng cơ chế này cho source mods:
+
+| Patch | Mục đích |
+|-------|----------|
+| `00-vssharp-hide-default-explorer.patch` | Hide default Explorer module. Patches `vscode/src/vs/workbench/contrib/files/browser/explorerViewlet.ts` — re-register Explorer container at `AuxiliaryBar` (instead of Sidebar) with no icon, `isDefault: false`, `doNotRegisterOpenCommand: true`. Left activity bar có entry → không có Explorer icon. Container vẫn tồn tại trong registry để `viewsExtensionPoint.getDefaultViewContainer()` (line 564, non-null assertion) không crash khi các extension như `vscode.npm` register `views.explorer`. |
+| `00-vssharp-default-themes.patch` | Đổi `ThemeSettingDefaults`: `COLOR_THEME_DARK = 'dark-jetbrains-color-theme'`, `COLOR_THEME_LIGHT = 'light-jetbrains-color-theme'`, `PRODUCT_ICON_THEME = 'jetbrains-product-icon-theme'`. User vẫn đổi được qua Settings. |
+| `00-vssharp-rider-defaults.patch` | Thêm 2 file mới: (1) `vscode/src/vs/workbench/vssharp.defaults.ts` — gọi `configurationRegistry.registerDefaultConfigurations(...)` cho ~40 settings (font, sizing, breadcrumbs, ...); (2) `vscode/src/vs/workbench/media/vssharp.css` — CSS overrides cho Rider-style card layout (transparent border + rounded corners + workbench background "shines through" giữa các panels). Import cả 2 qua `workbench.common.main.ts`. |
+
+### Edit hoặc thêm patch
+
+```bash
+# Edit vscode/src/... trực tiếp, sau đó:
+cd vscode
+git diff src/vs/path/to/file.ts > ../patches/user/00-vssharp-<name>.patch
+git checkout src/vs/path/to/file.ts    # reset source
+cd ..
+# Re-apply via:
+./dev/patch.sh patches/user/00-vssharp-<name>.patch
+# Hoặc re-run prepare (~10–30 min)
+```
+
+---
+
 ## Workflow dev hàng ngày
 
 | Sửa gì | Build / reload |
 |--------|---------------|
 | `vscode/src/...` (VS Code core, TS) | `npm run watch` tự rebuild → `Cmd+R` |
-| `patches/*.patch` | re-prepare cả vscode/ (nặng) |
+| `patches/*.patch` hoặc `patches/user/*.patch` | re-prepare vscode/ (nặng) hoặc edit vscode/src/ trực tiếp + watch rebuild |
 | `apply-*.sh` | chạy lại script → `Cmd+R` hoặc restart app |
 | `vssharp/extensions/dotrush/src/VSCode/` | `npm run package` → `extend-prepare.sh` → `Cmd+R` |
 | `vssharp/extensions/dotrush/src/DotRush.Roslyn.*/` | `dotnet-cake --target=server` → `extend-prepare.sh` → restart app |
-| `vssharp/extensions/vssharp-runner/src/` | `npm run compile` → `extend-prepare.sh` → reload |
+| `vssharp/extensions/vssharp-{runner,explorer}/src/` | `npm run compile` → `extend-prepare.sh` → reload |
+| `vssharp/extensions/vssharp-explorer/media/*` | `npm run compile` (webpack copy) → `extend-prepare.sh` → reload |
+| `vssharp/extensions/jetbrains-product-icon-theme/` | `extend-prepare.sh` → reload (no build) |
 | `vssharp/extensions/*/package.json` (manifest) | `extend-prepare.sh` → reload (no build) |
 
 ---

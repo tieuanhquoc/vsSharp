@@ -1,0 +1,46 @@
+diff --git a/src/vs/workbench/contrib/files/browser/explorerViewlet.ts b/src/vs/workbench/contrib/files/browser/explorerViewlet.ts
+index ecc6af48..efa2734c 100644
+--- a/src/vs/workbench/contrib/files/browser/explorerViewlet.ts
++++ b/src/vs/workbench/contrib/files/browser/explorerViewlet.ts
+@@ -251,26 +251,29 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
+ 
+ const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
+ 
+-/**
+- * Explorer viewlet container.
+- */
++// VS Sharp: Default Explorer module is hidden from the user.
++// The container MUST stay registered — `viewsExtensionPoint.getDefaultViewContainer()`
++// dereferences it with `!` for any third-party `contributes.views.explorer`
++// (npm scripts, git, etc.). Skipping registration crashes the extension host
++// view loader and prevents OUR own activity bar items (vssharp-explorer, etc.)
++// from registering as a side-effect.
++//
++// Workaround: register at AuxiliaryBar (right side, opt-in) instead of Sidebar,
++// omit the icon, suppress the open command. Result:
++//   - Left activity bar: no Explorer entry (only Sidebar items render there).
++//   - Sidebar right-click "Show Hidden" menu: doesn't list AuxiliaryBar items.
++//   - AuxiliaryBar tab strip: no icon → no visible handle even when right side
++//     panel is opened (rare).
++//   - getDefaultViewContainer(): still returns this container → no crash.
+ export const VIEW_CONTAINER: ViewContainer = viewContainerRegistry.registerViewContainer({
+ 	id: VIEWLET_ID,
+ 	title: localize2('explore', "Explorer"),
+ 	ctorDescriptor: new SyncDescriptor(ExplorerViewPaneContainer),
+ 	storageId: 'workbench.explorer.views.state',
+-	icon: explorerViewIcon,
+ 	alwaysUseContainerInfo: true,
+ 	hideIfEmpty: true,
+ 	order: 0,
+-	openCommandActionDescriptor: {
+-		id: VIEWLET_ID,
+-		title: localize2('explore', "Explorer"),
+-		mnemonicTitle: localize({ key: 'miViewExplorer', comment: ['&& denotes a mnemonic'] }, "&&Explorer"),
+-		keybindings: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyE },
+-		order: 0
+-	},
+-}, ViewContainerLocation.Sidebar, { isDefault: true });
++}, ViewContainerLocation.AuxiliaryBar, { isDefault: false, doNotRegisterOpenCommand: true });
+ 
+ const openFolder = localize('openFolder', "Open Folder");
+ const addAFolder = localize('addAFolder', "add a folder");

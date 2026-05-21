@@ -20,9 +20,7 @@
     "webpack-cli": "^5.1.4"
   },
   "activationEvents": [
-    "workspaceContains:**/Properties/launchSettings.json",
-    "workspaceContains:**/*.csproj",
-    "workspaceContains:**/*.sln"
+    "onStartupFinished"
   ],
   "contributes": {
     "commands": [
@@ -104,6 +102,13 @@
         { "command": "vssharp.runner.selectProfile", "group": "vssharp@3", "when": "vssharp.runner.hasProfiles" }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "vssharp.runner.profiles",
+        "contents": "No .NET launch profiles found.\nOpen a folder with a `.csproj`, `.sln`, or `launchSettings.json` to get started.",
+        "when": "!vssharp.runner.hasProfiles"
+      }
+    ],
     "keybindings": [
       { "command": "vssharp.runner.debug", "key": "f5",      "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus" },
       { "command": "vssharp.runner.run",   "key": "ctrl+f5", "when": "vssharp.runner.hasProfiles && !inDebugMode" },
