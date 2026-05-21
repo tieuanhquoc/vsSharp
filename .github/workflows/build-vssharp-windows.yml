@@ -38,6 +38,18 @@ jobs:
         with:
           node-version: '22.22.3'
 
+      - name: Debug environment
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        run: |
+          Write-Host "=== Current user ==="
+          whoami
+          Write-Host "=== USERPROFILE ==="
+          Write-Host $env:USERPROFILE
+          Write-Host "=== where python ==="
+          where.exe python 2>&1
+          Write-Host "=== System PATH ==="
+          [Environment]::GetEnvironmentVariable("Path","Machine")
+
       - name: Add tools to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
