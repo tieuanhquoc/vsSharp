@@ -38,9 +38,21 @@ jobs:
         with:
           node-version: '22.22.1'
 
-      - name: Setup dependencies
+      - name: Verify build tools
         shell: powershell -ExecutionPolicy Bypass -File {0}
-        run: vssharp\setup-windows-runner.ps1
+        run: |
+          $missing = @()
+          foreach ($cmd in @("node","python","dotnet","jq","makensis","candle")) {
+            if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) { $missing += $cmd }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing tools: $($missing -join ', '). Run vssharp\setup-windows-runner.ps1 as Administrator on this machine first."
+            exit 1
+          }
+          Write-Host "node:     $(node --version)"
+          Write-Host "python:   $((python --version 2>&1))"
+          Write-Host "dotnet:   $(dotnet --version)"
+          Write-Host "jq:       $(jq --version)"
 
       - name: Add Git Bash to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
