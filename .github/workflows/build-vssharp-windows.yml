@@ -33,6 +33,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install jq
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        run: |
+          if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+            $url = "https://github.com/jqlang/jq/releases/latest/download/jq-windows-amd64.exe"
+            $dest = "C:\Windows\System32\jq.exe"
+            Invoke-WebRequest -Uri $url -OutFile $dest
+          }
+
       - name: Add Git Bash to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
