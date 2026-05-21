@@ -41,23 +41,35 @@ jobs:
       - name: Add tools to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
-          $paths = @(
-            # Git Bash
-            (Join-Path (Split-Path (Split-Path (Get-Command git).Source)) "bin"),
-            # NSIS
-            "C:\Program Files (x86)\NSIS",
-            # WiX Toolset v3
-            (Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName | ForEach-Object { "$_\bin" }),
-            # Python (system or user install)
-            "C:\Python311",
-            "C:\Python311\Scripts",
-            "$env:LOCALAPPDATA\Programs\Python\Python311",
-            "$env:LOCALAPPDATA\Programs\Python\Python311\Scripts",
-            # Chocolatey tools
-            "C:\ProgramData\chocolatey\bin"
-          )
-          foreach ($p in $paths) {
-            if ($p -and (Test-Path $p)) { echo $p >> $env:GITHUB_PATH }
+          # Git Bash
+          $gitBin = Join-Path (Split-Path (Split-Path (Get-Command git).Source)) "bin"
+          if (Test-Path $gitBin) { echo $gitBin >> $env:GITHUB_PATH }
+
+          # NSIS
+          if (Test-Path "C:\Program Files (x86)\NSIS") {
+            echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
+          }
+
+          # WiX Toolset v3
+          $wix = Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" -ErrorAction SilentlyContinue |
+                 Sort-Object Name -Descending | Select-Object -First 1
+          if ($wix) { echo "$($wix.FullName)\bin" >> $env:GITHUB_PATH }
+
+          # Chocolatey
+          if (Test-Path "C:\ProgramData\chocolatey\bin") {
+            echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
+          }
+
+          # Python — search registry (works regardless of which user runs the runner)
+          foreach ($hive in @("HKLM:\SOFTWARE\Python\PythonCore","HKCU:\SOFTWARE\Python\PythonCore")) {
+            Get-ChildItem $hive -ErrorAction SilentlyContinue | ForEach-Object {
+              $ip = (Get-ItemProperty "$($_.PSPath)\InstallPath" -ErrorAction SilentlyContinue).'(default)'
+              if ($ip) {
+                $ip = $ip.TrimEnd('\')
+                if (Test-Path $ip) { echo $ip >> $env:GITHUB_PATH }
+                if (Test-Path "$ip\Scripts") { echo "$ip\Scripts" >> $env:GITHUB_PATH }
+              }
+            }
           }
 
       - name: Verify build tools
@@ -84,8 +96,7 @@ jobs:
             . ./get_repo.sh
             . ./prepare_vscode.sh
           else
-            echo "vscode/ already prepared — skipping get_repo + prepare_vscode."
-            # Reset only the VSCODIUM HELPER commit so patches can be re-applied cleanly.
+            echo "vscode/ already prepared — skipping."
             cd vscode
             git add -A
             while git log -1 | grep -q "VSCODIUM HELPER"; do
@@ -98,7 +109,7 @@ jobs:
       - name: Generate dev/build.env
         run: |
           MS_COMMIT=$( node -p "require('./upstream/stable.json').commit" )
-          MS_TAG=$( node    -p "require('./upstream/stable.json').tag" )
+          MS_TAG=$( node -p "require('./upstream/stable.json').tag" )
           RELEASE_VERSION="${MS_TAG}"
           BUILD_SOURCEVERSION=$( printf '%s' "${RELEASE_VERSION}" | sha1sum | cut -d' ' -f1 )
           {
