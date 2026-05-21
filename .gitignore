@@ -34,10 +34,9 @@ npm-debug.log*
 vssharp/extensions/*/node_modules/
 vssharp/extensions/*/out/
 
-# DotRush — fetched by vssharp/install-dotrush.sh (not committed).
-# Pin commit + patches live in vssharp/dotrush.UPSTREAM.txt + vssharp/dotrush.patches/.
+# Third-party extensions fetched by vssharp/install-*.sh (not committed).
+# Pin commit + local patches live in vssharp/<name>.UPSTREAM.txt + vssharp/<name>.patches/.
 vssharp/extensions/dotrush/
-vssharp/extensions/dotrush.UPSTREAM.txt
 
 # vssharp-runner — built bundle excluded (rebuild via npm run compile)
 vssharp/extensions/vssharp-runner/extension/
