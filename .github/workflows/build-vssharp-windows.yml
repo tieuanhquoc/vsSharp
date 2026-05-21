@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Add Git Bash to PATH
-        shell: pwsh
+        shell: powershell
         run: |
           $git = (Get-Command git).Source                  # e.g. C:\Program Files\Git\cmd\git.exe
           $gitBin = Join-Path (Split-Path (Split-Path $git)) "bin"
