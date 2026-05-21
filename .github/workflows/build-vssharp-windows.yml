@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22.22.1'
+          node-version: '22.22.3'
 
       - name: Verify build tools
         shell: powershell -ExecutionPolicy Bypass -File {0}
@@ -139,3 +139,11 @@ jobs:
           name: vssharp-windows-${{ env.RELEASE_VERSION }}
           path: assets/
           retention-days: 14
+
+      # ── Cleanup (runs even if build fails) ────────────────────────────────
+      - name: Cleanup temp artifacts
+        if: always()
+        shell: bash
+        run: |
+          rm -rf VSCode-win32-x64 vscode-cli assets
+          rm -rf vscode/.build vscode/out vscode/out-build vscode/out-vscode-min
