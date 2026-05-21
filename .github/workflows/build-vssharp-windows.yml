@@ -38,6 +38,26 @@ jobs:
         with:
           node-version: '22.22.3'
 
+      - name: Add tools to PATH
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        run: |
+          $paths = @(
+            # Git Bash
+            (Join-Path (Split-Path (Split-Path (Get-Command git).Source)) "bin"),
+            # NSIS
+            "C:\Program Files (x86)\NSIS",
+            # WiX Toolset v3
+            (Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName | ForEach-Object { "$_\bin" }),
+            # Python
+            "C:\Python311",
+            "C:\Python311\Scripts",
+            # Chocolatey tools
+            "C:\ProgramData\chocolatey\bin"
+          )
+          foreach ($p in $paths) {
+            if ($p -and (Test-Path $p)) { echo $p >> $env:GITHUB_PATH }
+          }
+
       - name: Verify build tools
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
@@ -53,13 +73,6 @@ jobs:
           Write-Host "python:   $((python --version 2>&1))"
           Write-Host "dotnet:   $(dotnet --version)"
           Write-Host "jq:       $(jq --version)"
-
-      - name: Add Git Bash to PATH
-        shell: powershell -ExecutionPolicy Bypass -File {0}
-        run: |
-          $git = (Get-Command git).Source                  # e.g. C:\Program Files\Git\cmd\git.exe
-          $gitBin = Join-Path (Split-Path (Split-Path $git)) "bin"
-          echo $gitBin >> $env:GITHUB_PATH
 
       # ── vscode source (reuse if already prepared on this runner) ──────────
       - name: Prepare vscode source
