@@ -117,7 +117,16 @@ jobs:
         run: |
           $log = Get-ChildItem "$env:LOCALAPPDATA\npm-cache\_logs" -Filter "*.log" -ErrorAction SilentlyContinue |
                  Sort-Object LastWriteTime -Descending | Select-Object -First 1
-          if ($log) { Get-Content $log.FullName | Select-Object -Last 200 }
+          if ($log) {
+            $lines = Get-Content $log.FullName
+            $lines | Where-Object { $_ -match "error|warning|MSBuild|gyp|C\+\+" } | Select-Object -Last 100
+          }
+          # gyp build log
+          $gypLog = Get-ChildItem "vscode\node_modules\@vscode\native-watchdog\build" -Recurse -Filter "*.log" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($gypLog) {
+            Write-Host "=== gyp build log: $($gypLog.FullName) ==="
+            Get-Content $gypLog.FullName
+          }
 
       - name: Generate dev/build.env
         run: |
