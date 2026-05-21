@@ -48,9 +48,11 @@ jobs:
             "C:\Program Files (x86)\NSIS",
             # WiX Toolset v3
             (Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName | ForEach-Object { "$_\bin" }),
-            # Python
+            # Python (system or user install)
             "C:\Python311",
             "C:\Python311\Scripts",
+            "$env:LOCALAPPDATA\Programs\Python\Python311",
+            "$env:LOCALAPPDATA\Programs\Python\Python311\Scripts",
             # Chocolatey tools
             "C:\ProgramData\chocolatey\bin"
           )
