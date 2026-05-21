@@ -37,9 +37,11 @@ jobs:
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
           if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
-            $url = "https://github.com/jqlang/jq/releases/latest/download/jq-windows-amd64.exe"
-            $dest = "C:\Windows\System32\jq.exe"
+            $url  = "https://github.com/jqlang/jq/releases/latest/download/jq-windows-amd64.exe"
+            $dest = "$env:RUNNER_TOOL_CACHE\jq.exe"
+            New-Item -ItemType Directory -Force -Path $env:RUNNER_TOOL_CACHE | Out-Null
             Invoke-WebRequest -Uri $url -OutFile $dest
+            echo $env:RUNNER_TOOL_CACHE >> $env:GITHUB_PATH
           }
 
       - name: Add Git Bash to PATH
