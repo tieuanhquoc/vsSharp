@@ -1,0 +1,13 @@
+diff --git a/src/vs/platform/theme/browser/iconsStyleSheet.ts b/src/vs/platform/theme/browser/iconsStyleSheet.ts
+index 7215f066..efa0e92b 100644
+--- a/src/vs/platform/theme/browser/iconsStyleSheet.ts
++++ b/src/vs/platform/theme/browser/iconsStyleSheet.ts
+@@ -52,7 +52,7 @@ export function getIconsStyleSheet(themeService: IThemeService | undefined): IIc
+ 					rules.push(css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; font-family: ${css.stringValue(fontContribution.id)}; }`);
+ 				} else {
+ 					rootAttribs.push(css.inline`${contentVar}: ${css.stringValue(definition.fontCharacter)}; ${fontFamilyVar}: 'codicon';`);
+-					rules.push(css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; }`);
++					rules.push(css.inline`.codicon-${css.className(contribution.id)}:before { content: ${css.stringValue(definition.fontCharacter)}; font-family: 'codicon'; }`);
+ 				}
+ 			}
+

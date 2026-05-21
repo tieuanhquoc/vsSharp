@@ -1,0 +1,13 @@
+tunnel: 020fa711-df2a-45e7-a6fd-20b6694df484
+credentials-file: ./020fa711-df2a-45e7-a6fd-20b6694df484.json
+
+protocol: http2
+
+ingress:
+  - hostname: rustdesk.dotnet.id.vn
+    service: tcp://localhost:21116
+
+  - hostname: rustdesk-relay.dotnet.id.vn
+    service: tcp://localhost:21117
+
+  - service: http_status:404

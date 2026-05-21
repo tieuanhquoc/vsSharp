@@ -23,9 +23,10 @@ export interface ProjectProfile {
 }
 
 const SETTINGS_GLOB = '**/Properties/launchSettings.json';
+const SETTINGS_EXCLUDE = '{**/node_modules/**,**/extensions/**,**/.git/**,**/bin/**,**/obj/**,**/packages/**}';
 
 export async function discoverProjectProfiles(): Promise<ProjectProfile[]> {
-  const uris = await vscode.workspace.findFiles(SETTINGS_GLOB, '**/node_modules/**');
+  const uris = await vscode.workspace.findFiles(SETTINGS_GLOB, SETTINGS_EXCLUDE);
   const result: ProjectProfile[] = [];
 
   for (const uri of uris) {
