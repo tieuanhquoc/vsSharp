@@ -43,18 +43,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Debug environment
-        shell: powershell -ExecutionPolicy Bypass -File {0}
-        run: |
-          Write-Host "=== Current user ==="
-          whoami
-          Write-Host "=== USERPROFILE ==="
-          Write-Host $env:USERPROFILE
-          Write-Host "=== where python ==="
-          where.exe python 2>&1
-          Write-Host "=== System PATH ==="
-          [Environment]::GetEnvironmentVariable("Path","Machine")
-
       - name: Add tools to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
@@ -123,6 +111,14 @@ jobs:
             . ./prepare_vscode.sh
           fi
 
+      - name: Print npm error log on failure
+        if: failure()
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        run: |
+          $log = Get-ChildItem "$env:LOCALAPPDATA\npm-cache\_logs" -Filter "*.log" -ErrorAction SilentlyContinue |
+                 Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if ($log) { Get-Content $log.FullName | Select-Object -Last 200 }
+
       - name: Generate dev/build.env
         run: |
           MS_COMMIT=$( node -p "require('./upstream/stable.json').commit" )
@@ -173,6 +169,10 @@ jobs:
         env:
           npm_config_arch: x64
           npm_config_target_arch: x64
+          GYP_MSVS_VERSION: "2022"
+          npm_config_msvs_version: "2022"
+          vs2022_install: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools"
+          npm_config_python: ${{ env.pythonLocation }}\python.exe
         run: ./dev/build.sh -s -p
 
       # ── Artifacts ─────────────────────────────────────────────────────────
