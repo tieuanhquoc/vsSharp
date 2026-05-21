@@ -38,16 +38,9 @@ jobs:
         with:
           node-version: '22.22.1'
 
-      - name: Install jq
+      - name: Setup dependencies
         shell: powershell -ExecutionPolicy Bypass -File {0}
-        run: |
-          if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
-            $url  = "https://github.com/jqlang/jq/releases/latest/download/jq-windows-amd64.exe"
-            $dest = "$env:RUNNER_TOOL_CACHE\jq.exe"
-            New-Item -ItemType Directory -Force -Path $env:RUNNER_TOOL_CACHE | Out-Null
-            Invoke-WebRequest -Uri $url -OutFile $dest
-            echo $env:RUNNER_TOOL_CACHE >> $env:GITHUB_PATH
-          }
+        run: vssharp\setup-windows-runner.ps1
 
       - name: Add Git Bash to PATH
         shell: powershell -ExecutionPolicy Bypass -File {0}
