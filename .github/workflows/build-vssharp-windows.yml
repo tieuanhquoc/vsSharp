@@ -143,7 +143,8 @@ jobs:
       # ── Cleanup (runs even if build fails) ────────────────────────────────
       - name: Cleanup temp artifacts
         if: always()
-        shell: bash
+        shell: powershell -ExecutionPolicy Bypass -File {0}
         run: |
-          rm -rf VSCode-win32-x64 vscode-cli assets
-          rm -rf vscode/.build vscode/out vscode/out-build vscode/out-vscode-min
+          foreach ($dir in @("VSCode-win32-x64","vscode-cli","assets","vscode\.build","vscode\out","vscode\out-build","vscode\out-vscode-min")) {
+            if (Test-Path $dir) { Remove-Item $dir -Recurse -Force }
+          }
