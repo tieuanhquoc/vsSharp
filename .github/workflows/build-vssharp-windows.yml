@@ -33,6 +33,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Add Git Bash to PATH
+        shell: pwsh
+        run: |
+          $git = (Get-Command git).Source                  # e.g. C:\Program Files\Git\cmd\git.exe
+          $gitBin = Join-Path (Split-Path (Split-Path $git)) "bin"
+          echo $gitBin >> $env:GITHUB_PATH
+
       # ── vscode source (reuse if already prepared on this runner) ──────────
       - name: Prepare vscode source
         run: |
