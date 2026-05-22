@@ -231,23 +231,6 @@
           "group": "2_existing@1"
         }
       ],
-      "view/title": [
-        {
-          "command": "vssharp.explorer.refresh",
-          "when": "view == vssharp.explorer.tree",
-          "group": "navigation@2"
-        },
-        {
-          "command": "vssharp.explorer.showNonProjectFiles",
-          "when": "view == vssharp.explorer.tree && !vssharp.explorer.showNonProjectFiles",
-          "group": "navigation@1"
-        },
-        {
-          "command": "vssharp.explorer.hideNonProjectFiles",
-          "when": "view == vssharp.explorer.tree && vssharp.explorer.showNonProjectFiles",
-          "group": "navigation@1"
-        }
-      ],
       "view/item/context": [
         {
           "submenu": "vssharp.explorer.addMenu",
