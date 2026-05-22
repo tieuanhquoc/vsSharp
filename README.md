@@ -1,38 +1,162 @@
 <div id="vssharp-logo" align="center">
     <br />
     <h1>VS Sharp</h1>
-    <h3>A Free/Libre C# IDE built on VSCodium</h3>
+    <h3>A Free/Libre C# IDE built on VSCodium — Rider-style, zero proprietary lock-in</h3>
+    <p><sub><i>VS Code's editor • JetBrains-style chrome • Roslyn LSP • Profile-based run/debug</i></sub></p>
 </div>
 
 ---
 
-**VS Sharp** is a fork-customization of [VSCodium](https://github.com/VSCodium/vscodium) (the FLOSS rebuild of Microsoft VS Code) tailored as a dedicated **C# / .NET IDE**.
+**VS Sharp** is a custom rebuild of [VSCodium](https://github.com/VSCodium/vscodium) (the FLOSS rebuild of Microsoft VS Code) tailored as a dedicated **C# / .NET IDE**. It pairs VS Code's editor with a Rider/Visual-Studio-class .NET workflow — Solution Explorer, multi-profile run/debug, JetBrains-style chrome — using only MIT-licensed sources.
 
-It is **not** a from-scratch fork. We follow VSCodium's pattern: re-build Microsoft's MIT-licensed `vscode` source with custom patches, branding, and bundled extensions. All customizations live in a separate `vssharp/` tree so upstream sync stays manageable.
+It is **not** a from-scratch fork. We follow VSCodium's pattern: rebuild Microsoft's MIT-licensed `vscode` source with custom patches, branding, and bundled extensions. All customizations live in a separate `vssharp/` tree so upstream sync stays manageable.
+
+---
+
+## Why VS Sharp
+
+C# / .NET development on VS Code today funnels users into Microsoft's proprietary **C# Dev Kit**, whose license restricts use to official VS Code builds. VS Sharp ships a 100% open-source alternative:
+
+| You want… | VS Sharp gives you… |
+|---|---|
+| Roslyn-powered C# IntelliSense | **DotRush** LSP bundled as built-in (no marketplace install) |
+| Rider-style Solution Explorer with `.sln` parsing | **VS Sharp Explorer** webview, JetBrains New UI icons |
+| Run/Debug from `launchSettings.json` like Visual Studio | **VS Sharp Runner** — multi-profile, concurrent sessions |
+| JetBrains visual identity without trademark assets | fogio New UI themes + product icons (MIT) |
+| FLOSS-only stack, telemetry off | Inherited from VSCodium |
+| Customize and rebrand for your own org | `apply-branding.sh` + `apply-logo.sh` |
+
+---
+
+## Features at a glance
+
+### Solution Explorer (Rider-style, two-tab webview)
+
+A custom webview panel that replaces VS Code's default file explorer. Two tabs in one container:
+
+- **Solution tab** — parses `.sln` / `.slnx` directly (self-implemented, no MSBuild dependency). Renders:
+  - Solution root with project count (e.g. `VN_MYCLUB sln · 43 projects`)
+  - Solution folders nested as the `.sln` says
+  - Projects with their type glyphs (Web / Library / Console, etc.)
+  - Expand a project → list source files grouped by folder
+  - `Properties/` and `wwwroot/` pinned to top of each project (matches Rider)
+- **Files tab** — plain workspace tree (escape hatch when you need raw files outside the solution graph)
+- **Eye toggle** — show/hide non-project files (bin, obj, .git, .DS_Store, dot-files, configurable `vssharp.explorer.hiddenPatterns`)
+- **JetBrains New UI icons** — 186 file SVGs + 44 folder SVGs from `fogio-org/vscode-jetbrains-file-icon-theme` (MIT). Dark and light theme variants follow the workbench theme automatically
+- **Context menu actions** — New File / Folder, Rename, Delete, Duplicate, Copy Relative/Absolute Path, Reveal in Finder, Open in Terminal, Manage NuGet Packages, Build / Clean / Restore / Run / Test (per-project)
+- **Right-click on solution** — Add New Project, Add Existing Project, New Solution Folder, Run Multiple Projects, Publish, Properties
+
+Implementation: `vssharp/extensions/vssharp-explorer/src/{sln-parser,csproj-parser,explorer-tree-provider,webview-provider}.ts` (each file < 200 LOC, modular).
+
+### Profile-based Run / Debug (Rider / Visual Studio parity)
+
+`VS Sharp Runner` reads every `Properties/launchSettings.json` in the workspace and surfaces every profile as a first-class action. No more `.vscode/launch.json` boilerplate for standard ASP.NET / .NET projects.
+
+**Activity bar — "VS Sharp Run" panel**
+- Hierarchy: **Project → Profile** tree view
+- Each profile shows inline action buttons: ▶ run · 🐞 debug · ⏹ stop (state-aware: shows only ▶ when stopped, only ⏹ when running)
+- Description line per profile shows live state: `▶ 3m · Development · http://localhost:5000`
+- Tooltip (Markdown) shows command kind, applicationUrl, environment vars, working directory, session start time
+- Icon color-coded:
+  - star (purple) — profile selected as default for this project
+  - circle (muted) — other profiles in the same project
+  - play (green) — running session
+  - bug (red) — debugging session
+- Header actions: refresh / stop-all
+- Project node shows count of running sessions
+
+**Editor title bar**
+- Two icons appear at top-right of any editor: ▶ and 🐞
+- Click → detects the `.csproj` containing the focused file
+- Resolves profile in this order:
+  1. Profile last chosen for that project (per-project memory)
+  2. First profile declared in `launchSettings.json`
+  3. Globally selected profile (fallback when the file isn't in any project)
+
+**Status bar**
+- Live counter `▶ N running` shown on the left when any session is alive
+- Click → QuickPick of running sessions to stop selectively
+
+**Keybindings** (active when a profile is resolvable and not already in a debug session)
+- `F5` — debug current file's project
+- `Ctrl+F5` / `Cmd+F5` — run current file's project (no debugger)
+
+**Concurrency model**
+- One session per profile (clicking ▶ on an already-running profile warns "stop first")
+- Multiple *different* profiles can run/debug simultaneously
+- Each session gets its own dedicated terminal panel — output never gets interleaved
+- Debug sessions launch via VS Code's debug API, attach DotRush debugger automatically for C#
+
+**Concrete example**
+```jsonc
+// Properties/launchSettings.json
+{
+  "profiles": {
+    "Main.API (Dev)": {
+      "commandName": "Project",
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:7001",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "Main.API (Staging)": {
+      "commandName": "Project",
+      "applicationUrl": "https://localhost:7002",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Staging" }
+    }
+  }
+}
+```
+→ Both profiles appear in the VS Sharp Run tree. You can debug `Main.API (Dev)` and simultaneously run `Main.API (Staging)` to compare behavior across environments. Each opens its own terminal.
+
+### DotRush bundled as built-in (no install step)
+
+[DotRush](https://github.com/JaneySprings/DotRush) (MIT) ships pre-bundled — Roslyn workspace, IntelliSense, code actions, .NET debugger, all without any marketplace install or Microsoft account. Pinned at a known-good commit via `vssharp/dotrush.UPSTREAM.txt`. Local patches in `vssharp/dotrush.patches/` (e.g. `NU1903` security advisory demoted from build-blocker to warning).
+
+### JetBrains-style chrome
+
+- **JetBrains Mono font** as default `editor.fontFamily` (falls through to Menlo if not installed — `brew install --cask font-jetbrains-mono` to enable)
+- **JetBrains color theme** (fogio, MIT) set as default for both dark and light
+- **JetBrains product icons** (fogio, MIT) set as default — sidebar / activity bar / status bar glyphs in the Rider New UI style
+- **Rider feel defaults** — line-height 1.5, breadcrumbs on, indent guides always, sticky scroll, tree indent 16px, single-click folder expand, custom title bar, auto-save 500ms, no minimap, font ligatures on, smooth caret animation. ~40 keys total registered via `configurationRegistry.registerDefaultConfigurations` so they sit at the lowest precedence — your `settings.json` always wins
+- **Watermark / letterpress** — empty editor area shows VS Sharp logo, theme-tinted (dark logo on light bg, white logo on dark bg, high-contrast variants for HC themes)
+
+### Default Explorer hidden completely
+
+VS Code's default file explorer (and Run/Debug viewlet) are moved to AuxiliaryBar with no icon, no command, no toggle — effectively invisible. VS Sharp Explorer is the only file browser. Container registration is preserved so third-party extensions that reference `contributes.views.explorer` (npm-scripts, git, etc.) keep working.
+
+### Custom view container ordering
+
+`viewsContainers` schema extended with an optional `order` field so VS Sharp extensions can slot **before** built-in containers. Default activity bar order:
+
+| Order | Container |
+|---|---|
+| 0 | VS Sharp Explorer |
+| 1 | VS Sharp Run |
+| 2 | Source Control |
+| 4 | Extensions |
+| 6 | Testing |
+
+User drag-drop is still respected and persisted to workspace storage.
+
+---
 
 ## What's different from VSCodium
 
 | Layer | VS Sharp customization |
 |-------|------------------------|
-| Branding | `VS Sharp` name, `com.vssharp` bundle ID, `vssharp` CLI/protocol, purple C# logo |
-| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger); **VS Sharp Runner** (multi-project run/debug from `Properties/launchSettings.json`); **VS Sharp Explorer** (custom Rider-style webview with Solution + Files tabs, JetBrains-style icons); **JetBrains Product Icon Theme** (set as default); **JetBrains Color Theme** (set as default dark + light) |
-| Icon set | JetBrains New UI file icons (fogio file-icon-theme bundle) + JetBrains New UI product icons (fogio product-icon-theme) |
-| Color theme | JetBrains New UI color theme (fogio, set as default for dark + light) |
-| Default Explorer | Module hidden via `patches/user/` — registered at AuxiliaryBar with no icon, no command, no toggle. VS Sharp Explorer is the only file browser. |
-| Rider-like defaults | ~40 settings pre-tuned to match JetBrains Rider feel: JetBrains Mono font 13px / line-height 1.5, breadcrumbs on, indent guides, sticky scroll, tree indent 16, single-click expand, custom title bar, auto-save, no minimap, ... (override-able in user `settings.json`) |
+| Branding | `VS Sharp` name, `com.vssharp` bundle ID, `vssharp` CLI/protocol, custom logo |
+| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger); **VS Sharp Runner**; **VS Sharp Explorer**; **JetBrains Product Icon Theme** (default); **JetBrains Color Theme** (default dark + light) |
+| Icon set | JetBrains New UI file icons + product icons (fogio bundles, MIT) |
+| Color theme | JetBrains New UI color theme (fogio, default dark + light) |
+| Default Explorer | Hidden (moved to AuxiliaryBar, no UI surface). VS Sharp Explorer replaces it |
+| Default Run/Debug viewlet | Hidden — replaced by VS Sharp Run activity bar entry |
+| Activity bar order | VS Sharp Explorer first, VS Sharp Run second, then built-ins |
+| Rider-like defaults | ~40 settings pre-tuned (font, line-height, breadcrumbs, sticky scroll, custom title bar, auto-save, no minimap, ...) |
+| Watermark | VS Sharp logo with theme-aware tinting |
 | Marketplace | Open VSX (inherited from VSCodium) |
 | Telemetry | Disabled (inherited from VSCodium) |
 
-## Highlights
-
-- **Roslyn-powered C# tooling** out of the box — no need to install any extension.
-- **Run / Debug from `Properties/launchSettings.json`** like Rider / Visual Studio:
-  - Sidebar tree view of all projects × profiles in your workspace.
-  - Editor toolbar buttons auto-detect the project containing the focused file.
-  - Concurrent sessions — run profile A while debugging profile B, each in its own terminal.
-  - Per-project memory for last-used profile.
-  - Status bar shows running session count.
-- **Modular customization** in `vssharp/extensions/` — fork your own .NET / C# extensions, bundle them as core features that ship with the app.
+---
 
 ## Project layout
 
@@ -40,16 +164,24 @@ It is **not** a from-scratch fork. We follow VSCodium's pattern: re-build Micros
 vscodium/                                # repo root (still named vscodium from upstream)
 ├── upstream/{stable,insider}.json       # pinned MS vscode commit
 ├── patches/                             # ~50 VSCodium patches (FLOSS rebrand + telemetry off)
-│   └── user/                            # VS Sharp source patches (auto-applied)
+│   └── user/                            # VS Sharp source patches (auto-applied by prepare_vscode.sh)
 │       ├── 00-vssharp-hide-default-explorer.patch
-│       ├── 00-vssharp-default-themes.patch        # color + product-icon defaults
-│       └── 00-vssharp-rider-defaults.patch        # font + sizing + Rider feel
-├── src/{stable,insider}/                # VSCodium resource overrides (icons, plist)
-├── vssharp/                             # ⭐ VS Sharp customizations
-│   ├── extend-prepare.sh                # bundles vssharp/extensions/* → vscode/extensions/
-│   ├── install-dotrush.sh               # clones DotRush at pinned commit + builds
+│       ├── 00-vssharp-hide-debug-viewlet.patch
+│       ├── 00-vssharp-default-themes.patch          # color + product-icon defaults
+│       ├── 00-vssharp-rider-defaults.patch          # ~40 Rider-feel settings
+│       ├── 00-vssharp-editor-title-only-run-debug.patch
+│       ├── 00-vssharp-codicon-font-fallback.patch
+│       ├── vssharp-viewPaneContainer.patch          # Explorer tabs/tree layout lock
+│       ├── vssharp-viewsExtensionPoint.patch        # order field for view containers
+│       └── vssharp-viewDescriptorService.patch      # suppress per-view toggles
+├── src/{stable,insider}/                # VSCodium resource overlay (icons, plist, letterpress)
+├── vssharp/                             # VS Sharp customizations
+│   ├── vscode-overrides/                # override TS/CSS sources → patches/user/ via gen-patches.sh
+│   ├── gen-patches.sh                   # rebuild patches/user/vssharp-*.patch from overrides
+│   ├── extend-prepare.sh                # bundle vssharp/extensions/* → vscode/extensions/
+│   ├── install-dotrush.sh               # clone DotRush at pinned commit + build
 │   ├── dotrush.UPSTREAM.txt             # pinned commit
-│   ├── dotrush.patches/                 # local patches
+│   ├── dotrush.patches/                 # local DotRush patches
 │   └── extensions/
 │       ├── dotrush/                     # (gitignored) fetched by install-dotrush.sh
 │       ├── jetbrains-color-theme/       # fogio color theme bundle (MIT)
@@ -59,11 +191,13 @@ vscodium/                                # repo root (still named vscodium from 
 │           └── media/icons/fogio/       # fogio file-icon bundle (MIT, ~1.1MB)
 ├── apply-version.sh                     # fix vscode/package.json version
 ├── apply-branding.sh                    # rewrite product.json → "VS Sharp"
-├── apply-logo.sh <png>                  # embed PNG into 5 SVG slots
+├── apply-logo.sh <png>                  # embed PNG into 5 SVG slots (workbench + 4 letterpress)
 ├── env.local.sh                         # source per terminal (nvm + venv + env vars)
 ├── run-app.sh                           # launch helper (strips NODE_OPTIONS for Electron)
 └── docs/howto-run-dev.md                # full dev guide
 ```
+
+---
 
 ## Quick start
 
@@ -103,19 +237,28 @@ source ./env.local.sh
 
 In-app: `Cmd+R` to reload after editing `vscode/src/...` or any built extension.
 
-## Why does this exist
+### Modify VS Code core sources (the override workflow)
 
-C# / .NET development on VS Code today requires Microsoft's proprietary **C# Dev Kit** (license restricts use to official VS Code builds). VS Sharp ships a 100% open-source alternative stack:
+Don't edit `vscode/` directly — it's a build artifact, reset by `prepare_vscode.sh`. Instead:
 
-- **[DotRush](https://github.com/JaneySprings/DotRush)** (MIT) — Roslyn LSP + debugger, vendored as a built-in.
-- **VS Sharp Runner** — custom extension giving Rider-class run/debug UX from `Properties/launchSettings.json` (concurrent sessions, multi-project, auto-detect).
-- Everything else inherited from VSCodium: telemetry off, open-vsx marketplace, FLOSS binaries.
+```bash
+# 1. Edit (or create) the modified file under the mirror tree
+$EDITOR vssharp/vscode-overrides/src/vs/workbench/.../yourFile.ts
 
-You can `git clone`, customize, and rebrand to your own IDE name in a few minutes. See `apply-branding.sh` and `apply-logo.sh`.
+# 2. Regenerate patch + apply to vscode/ in one shot
+./vssharp/gen-patches.sh
+# → writes patches/user/vssharp-yourFile.patch AND copies to vscode/
+
+# 3. npm watch picks up the change → Cmd+R to reload
+```
+
+---
 
 ## Supported platforms
 
-Currently verified on **macOS arm64**. Linux / Windows should work (VSCodium build scripts handle them) but haven't been validated for the VS Sharp customizations yet.
+Verified on **macOS arm64**. Linux / Windows should work (VSCodium's build scripts handle them) but the VS Sharp customizations haven't been validated on those yet — patches for cross-platform issues welcome.
+
+---
 
 ## Build a release `.app`
 
@@ -125,6 +268,8 @@ open VSCode-darwin-arm64/VSCodium.app   # name still "VSCodium" until full rebra
 ```
 
 ⚠ **Never** run `./dev/build.sh` without `-s` — it deletes `vscode/` and all customizations.
+
+---
 
 ## License
 
@@ -171,10 +316,12 @@ trademarks of JetBrains s.r.o. and excluded from all bundles. fogio's icon
 themes follow the same neutral-glyph design principle, matching JetBrains'
 **New UI** visual style without using any protected mark.
 
+---
+
 ## Acknowledgements
 
-- The **[VSCodium](https://github.com/VSCodium/vscodium)** team for the FLOSS rebuild infrastructure that makes this fork possible.
-- The **VS Code** team for the editor itself (MIT source).
-- **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** for the open-source Roslyn-based C# language server and debugger.
-- **[fogio-org](https://github.com/fogio-org)** for the JetBrains New UI-inspired themes (`vscode-jetbrains-file-icon-theme`, `vscode-jetbrains-product-icon-theme`, `vscode-jetbrains-color-theme`) — the bedrock of VS Sharp's Rider-like appearance.
-- The **JetBrains Mono** font (Apache 2.0) — not bundled, but VS Sharp's default `editor.fontFamily` falls through to it when installed (`brew install --cask font-jetbrains-mono`).
+- **[VSCodium](https://github.com/VSCodium/vscodium)** — the FLOSS rebuild infrastructure that makes this fork possible
+- **[Microsoft VS Code](https://github.com/microsoft/vscode)** — the editor itself (MIT source)
+- **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** — open-source Roslyn-based C# language server + debugger
+- **[fogio-org](https://github.com/fogio-org)** — JetBrains New UI-inspired themes (`vscode-jetbrains-file-icon-theme`, `vscode-jetbrains-product-icon-theme`, `vscode-jetbrains-color-theme`), the bedrock of VS Sharp's Rider-like appearance
+- **JetBrains Mono** font (Apache 2.0) — not bundled, but VS Sharp's default `editor.fontFamily` falls through to it when installed (`brew install --cask font-jetbrains-mono`)
