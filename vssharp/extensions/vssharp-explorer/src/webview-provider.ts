@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 import { listDirectory, listWorkspaceRoots } from './file-system';
 import { findSolutionFiles, parseSolution, SolutionData } from './sln-parser';
 import { parseCsproj, CsprojSummary } from './csproj-parser';
@@ -348,12 +349,40 @@ export class ExplorerWebviewProvider implements vscode.WebviewViewProvider, vsco
         terminal.show();
         break;
       }
-      case 'rename':
-        if (uri) await vscode.commands.executeCommand('vssharp.explorer.renameFile', uri, payload.label);
+      case 'rename': {
+        if (!payload.fsPath) break;
+        const oldName = path.basename(payload.fsPath);
+        const newName = await vscode.window.showInputBox({
+          prompt: 'Rename to',
+          value: oldName,
+          valueSelection: [0, oldName.lastIndexOf('.') > 0 ? oldName.lastIndexOf('.') : oldName.length],
+          validateInput: v => v?.trim() ? undefined : 'Name required',
+        });
+        if (!newName || newName.trim() === oldName) break;
+        const oldUri = vscode.Uri.file(payload.fsPath);
+        const newUri = vscode.Uri.file(path.join(path.dirname(payload.fsPath), newName.trim()));
+        try {
+          await vscode.workspace.fs.rename(oldUri, newUri, { overwrite: false });
+          this.post({ type: 'refresh' });
+        } catch (e: any) {
+          vscode.window.showErrorMessage(`Cannot rename: ${e.message}`);
+        }
         break;
-      case 'delete':
-        if (uri) await vscode.commands.executeCommand('vssharp.explorer.deleteFile', uri, payload.label);
+      }
+      case 'delete': {
+        if (!payload.fsPath) break;
+        const label = path.basename(payload.fsPath);
+        const choice = await vscode.window.showWarningMessage(`Delete "${label}"?`, { modal: true }, 'Delete');
+        if (choice === 'Delete') {
+          try {
+            await vscode.workspace.fs.delete(vscode.Uri.file(payload.fsPath), { recursive: true, useTrash: true });
+            this.post({ type: 'refresh' });
+          } catch (e: any) {
+            vscode.window.showErrorMessage(`Cannot delete: ${e.message}`);
+          }
+        }
         break;
+      }
     }
   }
 

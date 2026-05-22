@@ -37,9 +37,9 @@ if (Test-Path $vsWhere) {
     $hasVC = ($null -ne $p -and $p -ne "")
 }
 if (-not $hasVC) {
-    Write-Host "==> Installing VS Build Tools 2022 (C++ workload) — this takes ~10 min ..."
-    choco install visualstudio2022buildtools -y --no-progress `
-        --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows11SDK.22621 --includeRecommended --passive --norestart"
+    Write-Host "==> Installing VS Build Tools 2022 (C++ workload) - this takes ~10 min ..."
+    $params = "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows11SDK.22621 --includeRecommended --passive --norestart"
+    choco install visualstudio2022buildtools -y --no-progress --package-parameters $params
 }
 
 # ── .NET SDK 8 ────────────────────────────────────────────────────────────────

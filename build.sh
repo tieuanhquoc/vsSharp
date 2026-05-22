@@ -10,6 +10,26 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
 
   . prepare_vscode.sh
 
+  # Inject vssharp extensions into vscode/extensions/ before gulp bundles them.
+  # Must run here (after prepare_vscode.sh's git reset via dev/build.sh) so they
+  # survive into the .app and the ZIP produced by prepare_assets.sh.
+  if [[ -f "./vssharp/extend-prepare.sh" ]]; then
+    ./vssharp/extend-prepare.sh
+    # Install production deps only for vssharp extensions (not built-in vscode ones).
+    # Required because gulp's vscode-min-prepack runs `npm list --production --depth=99999`
+    # and fails if package.json dependencies are not installed.
+    for SRC in vssharp/extensions/*/; do
+      NAME=$( basename "${SRC%/}" )
+      ext_pkg="vscode/extensions/${NAME}/package.json"
+      [[ -f "${ext_pkg}" ]] || continue
+      has_deps="$( node -e "const p=require('./${ext_pkg}'); console.log(Object.keys(p.dependencies||{}).length > 0)" 2>/dev/null )"
+      if [[ "${has_deps}" == "true" ]]; then
+        echo "==> npm install --production in vscode/extensions/${NAME}"
+        ( cd "vscode/extensions/${NAME}" && npm install --production --ignore-scripts --no-audit --no-fund --prefer-offline )
+      fi
+    done
+  fi
+
   cd vscode || { echo "'vscode' dir not found"; exit 1; }
 
   export NODE_OPTIONS="--max-old-space-size=8192"
@@ -29,7 +49,9 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
 
     find "../VSCode-darwin-${VSCODE_ARCH}" -print0 | xargs -0 touch -c
 
-    . ../build_cli.sh
+    if [[ "${SHOULD_BUILD_CLI}" != "no" ]]; then
+      . ../build_cli.sh
+    fi
 
     VSCODE_PLATFORM="darwin"
   elif [[ "${OS_NAME}" == "windows" ]]; then

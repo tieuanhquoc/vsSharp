@@ -53,7 +53,13 @@ for SRC in "${VSSHARP_EXT}"/*/; do
   echo "::group::Installing ${NAME}"
   rm -rf "${DEST}"
   mkdir -p "${DEST}"
-  rsync -a "${EXCLUDES[@]}" "${SRC}" "${DEST}/"
+  if command -v rsync &>/dev/null; then
+    rsync -a "${EXCLUDES[@]}" "${SRC}" "${DEST}/"
+  else
+    # Windows fallback: robocopy (exit codes 0-7 are success)
+    EXCLUDES_RC=( node_modules src .git .github .vscode .vscodeignore .gitignore .editorconfig tsconfig*.json webpack.config.js package-lock.json "*.log" .DS_Store )
+    robocopy "$(cygpath -w "${SRC}")" "$(cygpath -w "${DEST}")" /E /XD "${EXCLUDES_RC[@]}" /XF "${EXCLUDES_RC[@]}" /NFL /NDL /NJH /NJS || true
+  fi
   echo "  installed: ${DEST}"
   echo "::endgroup::"
 done

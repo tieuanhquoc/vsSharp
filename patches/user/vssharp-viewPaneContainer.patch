@@ -1,0 +1,39 @@
+diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
+index e28161ee..b2fc09c0 100644
+--- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
++++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
+@@ -638,6 +638,21 @@ export class ViewPaneContainer<MementoType extends object = object> extends Comp
+ 			this.didLayout = true;
+ 			this.restoreViewSizes();
+ 		}
++
++		// VS Sharp: lock tabs webview to tab-bar height (34px) so the tree pane fills the rest.
++		// Default Pane.minimumBodySize is 120 which prevented resizePane(34) from shrinking;
++		// pinning min === max === 34 forces SplitView to allocate exactly that.
++		if (this.viewContainer.id.endsWith('vssharp-explorer-container')) {
++			const tabsPane = this.panes.find(p => p.id === 'vssharp.explorer.tabs');
++			console.log('[VSS] layout fired, panes=', this.panes.map(p => p.id), 'tabsPane=', !!tabsPane);
++			if (tabsPane) {
++				console.log('[VSS] before: minBody=', tabsPane.minimumBodySize, 'maxBody=', tabsPane.maximumBodySize, 'size=', this.getPaneSize(tabsPane));
++				tabsPane.minimumBodySize = 34;
++				tabsPane.maximumBodySize = 34;
++				this.resizePane(tabsPane, 34);
++				console.log('[VSS] after : minBody=', tabsPane.minimumBodySize, 'maxBody=', tabsPane.maximumBodySize, 'size=', this.getPaneSize(tabsPane));
++			}
++		}
+ 	}
+ 
+ 	setBoundarySashes(sashes: IBoundarySashes): void {
+@@ -1069,6 +1084,12 @@ export class ViewPaneContainer<MementoType extends object = object> extends Comp
+ 	}
+ 
+ 	private updateViewHeaders(): void {
++		// VS Sharp: hide all pane headers for the vssharp explorer panel so
++		// the tab bar and tree appear as one seamless view without section dividers.
++		if (this.viewContainer.id.endsWith('vssharp-explorer-container')) {
++			this.paneItems.forEach(i => { i.pane.headerVisible = false; });
++			return;
++		}
+ 		if (this.isViewMergedWithContainer()) {
+ 			if (this.paneItems[0].pane.isExpanded()) {
+ 				this.lastMergedCollapsedPane = undefined;

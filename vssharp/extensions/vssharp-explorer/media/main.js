@@ -201,6 +201,7 @@
       depth: 0,
       expandable: true,
     });
+    head.row.dataset.fsPath = sln.filePath;
 
     const children = document.createElement('div');
     children.className = 'children open';
@@ -208,7 +209,7 @@
     const folders = sln.projects.filter(p => p.isFolder);
     const roots = sln.projects.filter(p => !p.isFolder && !p.parentGuid);
     for (const folder of folders.filter(f => !f.parentGuid)) {
-      children.appendChild(renderFolder(folder, sln.projects, 1));
+      children.appendChild(renderFolder(folder, sln.projects, 1, sln.filePath));
     }
     for (const proj of roots) children.appendChild(renderProject(proj, 1));
 
@@ -220,7 +221,7 @@
     return wrap;
   }
 
-  function renderFolder(folder, allProjects, depth) {
+  function renderFolder(folder, allProjects, depth, slnFilePath) {
     const wrap = document.createElement('div');
     const head = makeRow({
       kind: 'solution-folder',
@@ -230,12 +231,13 @@
       depth,
       expandable: true,
     });
+    head.row.dataset.fsPath = slnFilePath;
     const children = document.createElement('div');
     children.className = 'children';
 
     const nested = allProjects.filter(p => p.parentGuid === folder.projectGuid);
     for (const child of nested) {
-      if (child.isFolder) children.appendChild(renderFolder(child, allProjects, depth + 1));
+      if (child.isFolder) children.appendChild(renderFolder(child, allProjects, depth + 1, slnFilePath));
       else children.appendChild(renderProject(child, depth + 1));
     }
     head.row.addEventListener('click', () => toggleNode(head.row, children, head.icon, 'folder'));
@@ -255,6 +257,7 @@
       depth,
       expandable: true,
     });
+    head.row.dataset.fsPath = proj.absolutePath;
 
     const children = document.createElement('div');
     children.className = 'children';
