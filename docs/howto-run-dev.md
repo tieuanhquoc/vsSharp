@@ -23,12 +23,12 @@ Mở **2 terminal**:
 
 ```bash
 # Terminal 1 — watch (giữ chạy nền)
-cd /Users/tieuanhquoc/Files/H_Source_code/vscodium
+cd "$REPO_ROOT"   # path tới vscodium repo của bạn
 source ./env.local.sh && cd vscode && npm run watch
 # Đợi log "Finished compilation with 0 errors after XXXXX ms"
 
 # Terminal 2 — launch app
-cd /Users/tieuanhquoc/Files/H_Source_code/vscodium
+cd "$REPO_ROOT"   # path tới vscodium repo của bạn
 ./run-app.sh
 ```
 
@@ -50,7 +50,7 @@ xcode-select --install                       # native modules
 ### 2. Python venv project-local
 
 ```bash
-cd /Users/tieuanhquoc/Files/H_Source_code/vscodium
+cd "$REPO_ROOT"   # path tới vscodium repo của bạn
 /opt/homebrew/opt/python@3.11/bin/python3.11 -m venv .venv
 ```
 
