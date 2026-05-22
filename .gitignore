@@ -10,6 +10,9 @@ VSCodium/
 .DS_Store
 *.env
 assets/
+# Exception: docs assets (README images, etc.) must ship in the repo
+!docs/assets/
+!docs/assets/**
 build/linux/appimage/out
 build/linux/appimage/pkg2appimage.AppDir
 build/linux/appimage/pkg2appimage-*.AppImage
