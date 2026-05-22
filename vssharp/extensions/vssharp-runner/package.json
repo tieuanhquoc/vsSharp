@@ -40,7 +40,8 @@
         {
           "id": "vssharp-runner",
           "title": "VS Sharp Run",
-          "icon": "$(rocket)"
+          "icon": "$(rocket)",
+          "order": 1
         }
       ]
     },
