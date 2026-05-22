@@ -1,0 +1,17 @@
+diff --git a/src/vs/workbench/services/views/browser/viewDescriptorService.ts b/src/vs/workbench/services/views/browser/viewDescriptorService.ts
+index 79ff9dd0..a6b5082a 100644
+--- a/src/vs/workbench/services/views/browser/viewDescriptorService.ts
++++ b/src/vs/workbench/services/views/browser/viewDescriptorService.ts
+@@ -839,6 +839,12 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
+ 
+ 	private registerViewsVisibilityActionsForContainer(viewContainerModel: ViewContainerModel): IDisposable {
+ 		const disposables = new DisposableStore();
++		// VS Sharp: suppress per-view toggle-visibility actions in the "..." menu
++		// for our explorer container so the title bar stays clean (tabs + tree are
++		// always co-visible by design).
++		if (viewContainerModel.viewContainer.id.endsWith('vssharp-explorer-container')) {
++			return disposables;
++		}
+ 		viewContainerModel.activeViewDescriptors.forEach((viewDescriptor, index) => {
+ 			if (!viewDescriptor.remoteAuthority) {
+ 				disposables.add(registerAction2(class extends ViewPaneContainerAction<ViewPaneContainer> {
