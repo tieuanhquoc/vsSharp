@@ -10,6 +10,12 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
 
   . prepare_vscode.sh
 
+  # Re-apply VS Sharp branding + version. dev/build.sh's `git reset --hard HEAD`
+  # wipes product.json changes, so apply-branding.sh must run AFTER the reset
+  # (which is now, after prepare_vscode.sh) and BEFORE gulp packages the app.
+  if [[ -f "./apply-version.sh" ]];  then ./apply-version.sh;  fi
+  if [[ -f "./apply-branding.sh" ]]; then ./apply-branding.sh; fi
+
   # Inject vssharp extensions into vscode/extensions/ before gulp bundles them.
   # Must run here (after prepare_vscode.sh's git reset via dev/build.sh) so they
   # survive into the .app and the ZIP produced by prepare_assets.sh.
