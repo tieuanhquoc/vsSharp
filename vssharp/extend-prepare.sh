@@ -56,9 +56,18 @@ for SRC in "${VSSHARP_EXT}"/*/; do
   if command -v rsync &>/dev/null; then
     rsync -a "${EXCLUDES[@]}" "${SRC}" "${DEST}/"
   else
-    # Windows fallback: robocopy (exit codes 0-7 are success)
-    EXCLUDES_RC=( node_modules src .git .github .vscode .vscodeignore .gitignore .editorconfig tsconfig*.json webpack.config.js package-lock.json "*.log" .DS_Store )
-    robocopy "$(cygpath -w "${SRC}")" "$(cygpath -w "${DEST}")" /E /XD "${EXCLUDES_RC[@]}" /XF "${EXCLUDES_RC[@]}" /NFL /NDL /NJH /NJS || true
+    # Portable fallback (works in Git Bash on Windows): cp -r then prune excludes
+    cp -r "${SRC}." "${DEST}/"
+    for excl in node_modules src .git .github .vscode .vscodeignore .gitignore .editorconfig webpack.config.js package-lock.json .DS_Store; do
+      rm -rf "${DEST}/${excl}"
+    done
+    find "${DEST}" -maxdepth 2 -name "tsconfig*.json" -delete
+    find "${DEST}" -maxdepth 2 -name "*.log" -delete
+  fi
+  # Verify copy worked — package.json MUST exist in DEST
+  if [[ ! -f "${DEST}/package.json" ]]; then
+    echo "ERROR: ${NAME} copy failed — no package.json in ${DEST}" >&2
+    exit 1
   fi
   echo "  installed: ${DEST}"
   echo "::endgroup::"
