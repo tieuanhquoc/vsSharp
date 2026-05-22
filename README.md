@@ -1,8 +1,10 @@
 <div id="vssharp-logo" align="center">
     <br />
+    <img src="docs/assets/vssharp-logo.png" alt="VS Sharp logo" width="140" height="140" />
     <h1>VS Sharp</h1>
     <h3>A Free/Libre C# IDE built on VSCodium — Rider-style, zero proprietary lock-in</h3>
-    <p><sub><i>VS Code's editor • JetBrains-style chrome • Roslyn LSP • Profile-based run/debug</i></sub></p>
+    <p><sub><i>VS Code's editor &nbsp;·&nbsp; JetBrains-style chrome &nbsp;·&nbsp; Roslyn LSP &nbsp;·&nbsp; Profile-based run/debug</i></sub></p>
+    <br />
 </div>
 
 ---
