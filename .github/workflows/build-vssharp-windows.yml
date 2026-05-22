@@ -77,6 +77,11 @@ jobs:
             echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
           }
 
+          # 7-Zip
+          if (Test-Path "C:\Program Files\7-Zip") {
+            echo "C:\Program Files\7-Zip" >> $env:GITHUB_PATH
+          }
+
           # Python — search registry (works regardless of which user runs the runner)
           foreach ($hive in @("HKLM:\SOFTWARE\Python\PythonCore","HKCU:\SOFTWARE\Python\PythonCore")) {
             Get-ChildItem $hive -ErrorAction SilentlyContinue | ForEach-Object {
