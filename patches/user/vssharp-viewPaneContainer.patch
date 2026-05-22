@@ -1,8 +1,7 @@
 diff --git a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-index e28161ee..192d4b91 100644
 --- a/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
 +++ b/src/vs/workbench/browser/parts/views/viewPaneContainer.ts
-@@ -638,6 +638,21 @@ export class ViewPaneContainer<MementoType extends object = object> extends Comp
+@@ -638,6 +638,21 @@
  			this.didLayout = true;
  			this.restoreViewSizes();
  		}
@@ -24,7 +23,7 @@ index e28161ee..192d4b91 100644
  	}
  
  	setBoundarySashes(sashes: IBoundarySashes): void {
-@@ -1069,6 +1084,12 @@ export class ViewPaneContainer<MementoType extends object = object> extends Comp
+@@ -1069,6 +1084,12 @@
  	}
  
  	private updateViewHeaders(): void {
