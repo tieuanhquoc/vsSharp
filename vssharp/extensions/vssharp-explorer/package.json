@@ -4,8 +4,12 @@
   "description": "Rider-style explorer with Solution / Files tabs (webview).",
   "publisher": "vssharp",
   "version": "0.1.0",
-  "engines": { "vscode": "^1.73.0" },
-  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.73.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "main": "./extension/main.js",
   "scripts": {
     "compile": "webpack --mode production",
@@ -25,7 +29,10 @@
   ],
   "contributes": {
     "submenus": [
-      { "id": "vssharp.explorer.addMenu", "label": "Add" }
+      {
+        "id": "vssharp.explorer.addMenu",
+        "label": "Add"
+      }
     ],
     "viewsContainers": {
       "activitybar": [
@@ -42,7 +49,8 @@
           "type": "webview",
           "id": "vssharp.explorer.tabs",
           "name": "",
-          "initialSize": 26
+          "initialSize": 26,
+          "fixedSize": true
         },
         {
           "type": "tree",
@@ -53,108 +61,403 @@
       ]
     },
     "commands": [
-      { "command": "vssharp.explorer.refresh",              "title": "Refresh",                "icon": "$(refresh)",   "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.showNonProjectFiles",  "title": "Show Non-Project Files", "icon": "$(eye)",       "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.hideNonProjectFiles",  "title": "Hide Non-Project Files", "icon": "$(eye-closed)","category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.newFile",              "title": "New File...",            "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.newFolder",            "title": "New Folder...",          "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.rename",               "title": "Rename...",              "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.delete",               "title": "Delete",                 "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.duplicate",            "title": "Duplicate",              "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.copyRelativePath",     "title": "Copy Relative Path",     "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.copyAbsolutePath",     "title": "Copy Absolute Path",     "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.revealInExplorer",     "title": "Reveal in Explorer",     "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.openProjectFile",      "title": "Open Project File",      "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.addPackage",           "title": "Add NuGet Package...",   "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.debugDump",            "title": "Debug: Dump Parsed Solution Tree", "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.build",                "title": "Build",                        "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.clean",                "title": "Clean",                        "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.restore",              "title": "Restore Packages",             "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.run",                  "title": "Run",                          "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.test",                 "title": "Test",                         "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.addNewProject",        "title": "New Project...",               "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.addNewSolutionFolder", "title": "New Solution Folder...",       "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.addExistingProject",   "title": "Existing Project...",          "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.manageNuget",          "title": "Manage NuGet Packages",        "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.unloadProjects",       "title": "Unload Projects",              "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.reloadAllProjects",    "title": "Reload All Projects",          "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.runMultipleProjects",  "title": "Run Multiple Projects...",     "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.publish",              "title": "Publish...",                   "category": "VS Sharp Explorer" },
-
-      { "command": "vssharp.explorer.openInTerminal",       "title": "Open in Terminal",             "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.openInFinder",         "title": "Open in Finder",               "category": "VS Sharp Explorer" },
-      { "command": "vssharp.explorer.showProperties",       "title": "Properties...",               "category": "VS Sharp Explorer" }
+      {
+        "command": "vssharp.explorer.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.showNonProjectFiles",
+        "title": "Show Non-Project Files",
+        "icon": "$(eye)",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.hideNonProjectFiles",
+        "title": "Hide Non-Project Files",
+        "icon": "$(eye-closed)",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.newFile",
+        "title": "New File...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.newFolder",
+        "title": "New Folder...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.rename",
+        "title": "Rename...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.delete",
+        "title": "Delete",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.duplicate",
+        "title": "Duplicate",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.copyRelativePath",
+        "title": "Copy Relative Path",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.copyAbsolutePath",
+        "title": "Copy Absolute Path",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.revealInExplorer",
+        "title": "Reveal in Explorer",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.openProjectFile",
+        "title": "Open Project File",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.addPackage",
+        "title": "Add NuGet Package...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.debugDump",
+        "title": "Debug: Dump Parsed Solution Tree",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.build",
+        "title": "Build",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.clean",
+        "title": "Clean",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.restore",
+        "title": "Restore Packages",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.run",
+        "title": "Run",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.test",
+        "title": "Test",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.addNewProject",
+        "title": "New Project...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.addNewSolutionFolder",
+        "title": "New Solution Folder...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.addExistingProject",
+        "title": "Existing Project...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.manageNuget",
+        "title": "Manage NuGet Packages",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.unloadProjects",
+        "title": "Unload Projects",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.reloadAllProjects",
+        "title": "Reload All Projects",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.runMultipleProjects",
+        "title": "Run Multiple Projects...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.publish",
+        "title": "Publish...",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.openInTerminal",
+        "title": "Open in Terminal",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.openInFinder",
+        "title": "Open in Finder",
+        "category": "VS Sharp Explorer"
+      },
+      {
+        "command": "vssharp.explorer.showProperties",
+        "title": "Properties...",
+        "category": "VS Sharp Explorer"
+      }
     ],
     "menus": {
       "vssharp.explorer.addMenu": [
-        { "command": "vssharp.explorer.addNewProject",        "group": "1_new@1" },
-        { "command": "vssharp.explorer.addNewSolutionFolder", "group": "1_new@2" },
-        { "command": "vssharp.explorer.addExistingProject",   "group": "2_existing@1" }
+        {
+          "command": "vssharp.explorer.addNewProject",
+          "group": "1_new@1"
+        },
+        {
+          "command": "vssharp.explorer.addNewSolutionFolder",
+          "group": "1_new@2"
+        },
+        {
+          "command": "vssharp.explorer.addExistingProject",
+          "group": "2_existing@1"
+        }
       ],
       "view/title": [
-        { "command": "vssharp.explorer.refresh",             "when": "view == vssharp.explorer.tree", "group": "navigation@2" },
-        { "command": "vssharp.explorer.showNonProjectFiles", "when": "view == vssharp.explorer.tree && !vssharp.explorer.showNonProjectFiles", "group": "navigation@1" },
-        { "command": "vssharp.explorer.hideNonProjectFiles", "when": "view == vssharp.explorer.tree && vssharp.explorer.showNonProjectFiles",  "group": "navigation@1" }
+        {
+          "command": "vssharp.explorer.refresh",
+          "when": "view == vssharp.explorer.tree",
+          "group": "navigation@2"
+        },
+        {
+          "command": "vssharp.explorer.showNonProjectFiles",
+          "when": "view == vssharp.explorer.tree && !vssharp.explorer.showNonProjectFiles",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vssharp.explorer.hideNonProjectFiles",
+          "when": "view == vssharp.explorer.tree && vssharp.explorer.showNonProjectFiles",
+          "group": "navigation@1"
+        }
       ],
       "view/item/context": [
-        { "submenu": "vssharp.explorer.addMenu", "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "0_add@1" },
-
-        { "command": "vssharp.explorer.manageNuget",          "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "1_manage@1" },
-        { "command": "vssharp.explorer.unloadProjects",       "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "1_manage@2" },
-        { "command": "vssharp.explorer.reloadAllProjects",    "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "1_manage@3" },
-
-        { "command": "vssharp.explorer.revealInExplorer", "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "2_open@1" },
-        { "command": "vssharp.explorer.revealInExplorer", "when": "view == vssharp.explorer.tree && viewItem == project",  "group": "1_open@1" },
-        { "command": "vssharp.explorer.revealInExplorer", "when": "view == vssharp.explorer.tree && viewItem == folder",   "group": "1_open@1" },
-        { "command": "vssharp.explorer.revealInExplorer", "when": "view == vssharp.explorer.tree && viewItem == file",     "group": "1_open@1" },
-        { "command": "vssharp.explorer.openProjectFile",  "when": "view == vssharp.explorer.tree && viewItem == project",  "group": "1_open@2" },
-
-        { "command": "vssharp.explorer.newFile",   "when": "view == vssharp.explorer.tree && viewItem == project", "group": "2_modify@1" },
-        { "command": "vssharp.explorer.newFile",   "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "2_modify@1" },
-        { "command": "vssharp.explorer.newFolder", "when": "view == vssharp.explorer.tree && viewItem == project", "group": "2_modify@2" },
-        { "command": "vssharp.explorer.newFolder", "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "2_modify@2" },
-        { "command": "vssharp.explorer.rename",    "when": "view == vssharp.explorer.tree && viewItem == project", "group": "2_modify@3" },
-        { "command": "vssharp.explorer.rename",    "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "2_modify@3" },
-        { "command": "vssharp.explorer.rename",    "when": "view == vssharp.explorer.tree && viewItem == file",    "group": "2_modify@3" },
-        { "command": "vssharp.explorer.delete",    "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "2_modify@4" },
-        { "command": "vssharp.explorer.delete",    "when": "view == vssharp.explorer.tree && viewItem == file",    "group": "2_modify@4" },
-        { "command": "vssharp.explorer.duplicate", "when": "view == vssharp.explorer.tree && viewItem == file",    "group": "2_modify@5" },
-
-        { "command": "vssharp.explorer.copyRelativePath", "when": "view == vssharp.explorer.tree && viewItem == project", "group": "3_clipboard@1" },
-        { "command": "vssharp.explorer.copyRelativePath", "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "3_clipboard@1" },
-        { "command": "vssharp.explorer.copyRelativePath", "when": "view == vssharp.explorer.tree && viewItem == file",    "group": "3_clipboard@1" },
-        { "command": "vssharp.explorer.copyAbsolutePath", "when": "view == vssharp.explorer.tree && viewItem == project", "group": "3_clipboard@2" },
-        { "command": "vssharp.explorer.copyAbsolutePath", "when": "view == vssharp.explorer.tree && viewItem == folder",  "group": "3_clipboard@2" },
-        { "command": "vssharp.explorer.copyAbsolutePath", "when": "view == vssharp.explorer.tree && viewItem == file",    "group": "3_clipboard@2" },
-
-        { "command": "vssharp.explorer.addPackage", "when": "view == vssharp.explorer.tree && viewItem == project", "group": "4_dotnet@1" },
-
-        { "command": "vssharp.explorer.runMultipleProjects", "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "4_actions@1" },
-        { "command": "vssharp.explorer.publish",              "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "4_actions@2" },
-
-        { "command": "vssharp.explorer.openInTerminal",  "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "6_tools@1" },
-        { "command": "vssharp.explorer.openInFinder",    "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "6_tools@2" },
-        { "command": "vssharp.explorer.showProperties",  "when": "view == vssharp.explorer.tree && viewItem == solution", "group": "6_tools@3" },
-
-        { "command": "vssharp.explorer.build",   "when": "view == vssharp.explorer.tree && viewItem == solution",       "group": "5_dotnet@1" },
-        { "command": "vssharp.explorer.build",   "when": "view == vssharp.explorer.tree && viewItem == solutionFolder", "group": "5_dotnet@1" },
-        { "command": "vssharp.explorer.build",   "when": "view == vssharp.explorer.tree && viewItem == project",        "group": "5_dotnet@1" },
-        { "command": "vssharp.explorer.run",     "when": "view == vssharp.explorer.tree && viewItem == project",        "group": "5_dotnet@2" },
-        { "command": "vssharp.explorer.test",    "when": "view == vssharp.explorer.tree && viewItem == project",        "group": "5_dotnet@3" },
-        { "command": "vssharp.explorer.restore", "when": "view == vssharp.explorer.tree && viewItem == solution",       "group": "5_dotnet@4" },
-        { "command": "vssharp.explorer.restore", "when": "view == vssharp.explorer.tree && viewItem == solutionFolder", "group": "5_dotnet@4" },
-        { "command": "vssharp.explorer.restore", "when": "view == vssharp.explorer.tree && viewItem == project",        "group": "5_dotnet@4" },
-        { "command": "vssharp.explorer.clean",   "when": "view == vssharp.explorer.tree && viewItem == solution",       "group": "5_dotnet@5" },
-        { "command": "vssharp.explorer.clean",   "when": "view == vssharp.explorer.tree && viewItem == solutionFolder", "group": "5_dotnet@5" },
-        { "command": "vssharp.explorer.clean",   "when": "view == vssharp.explorer.tree && viewItem == project",        "group": "5_dotnet@5" }
+        {
+          "submenu": "vssharp.explorer.addMenu",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "0_add@1"
+        },
+        {
+          "command": "vssharp.explorer.manageNuget",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "1_manage@1"
+        },
+        {
+          "command": "vssharp.explorer.unloadProjects",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "1_manage@2"
+        },
+        {
+          "command": "vssharp.explorer.reloadAllProjects",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "1_manage@3"
+        },
+        {
+          "command": "vssharp.explorer.revealInExplorer",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "2_open@1"
+        },
+        {
+          "command": "vssharp.explorer.revealInExplorer",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "1_open@1"
+        },
+        {
+          "command": "vssharp.explorer.revealInExplorer",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "1_open@1"
+        },
+        {
+          "command": "vssharp.explorer.revealInExplorer",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "1_open@1"
+        },
+        {
+          "command": "vssharp.explorer.openProjectFile",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "1_open@2"
+        },
+        {
+          "command": "vssharp.explorer.newFile",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "2_modify@1"
+        },
+        {
+          "command": "vssharp.explorer.newFile",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "2_modify@1"
+        },
+        {
+          "command": "vssharp.explorer.newFolder",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "2_modify@2"
+        },
+        {
+          "command": "vssharp.explorer.newFolder",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "2_modify@2"
+        },
+        {
+          "command": "vssharp.explorer.rename",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "2_modify@3"
+        },
+        {
+          "command": "vssharp.explorer.rename",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "2_modify@3"
+        },
+        {
+          "command": "vssharp.explorer.rename",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "2_modify@3"
+        },
+        {
+          "command": "vssharp.explorer.delete",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "2_modify@4"
+        },
+        {
+          "command": "vssharp.explorer.delete",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "2_modify@4"
+        },
+        {
+          "command": "vssharp.explorer.duplicate",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "2_modify@5"
+        },
+        {
+          "command": "vssharp.explorer.copyRelativePath",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "3_clipboard@1"
+        },
+        {
+          "command": "vssharp.explorer.copyRelativePath",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "3_clipboard@1"
+        },
+        {
+          "command": "vssharp.explorer.copyRelativePath",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "3_clipboard@1"
+        },
+        {
+          "command": "vssharp.explorer.copyAbsolutePath",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "3_clipboard@2"
+        },
+        {
+          "command": "vssharp.explorer.copyAbsolutePath",
+          "when": "view == vssharp.explorer.tree && viewItem == folder",
+          "group": "3_clipboard@2"
+        },
+        {
+          "command": "vssharp.explorer.copyAbsolutePath",
+          "when": "view == vssharp.explorer.tree && viewItem == file",
+          "group": "3_clipboard@2"
+        },
+        {
+          "command": "vssharp.explorer.addPackage",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "4_dotnet@1"
+        },
+        {
+          "command": "vssharp.explorer.runMultipleProjects",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "4_actions@1"
+        },
+        {
+          "command": "vssharp.explorer.publish",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "4_actions@2"
+        },
+        {
+          "command": "vssharp.explorer.openInTerminal",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "6_tools@1"
+        },
+        {
+          "command": "vssharp.explorer.openInFinder",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "6_tools@2"
+        },
+        {
+          "command": "vssharp.explorer.showProperties",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "6_tools@3"
+        },
+        {
+          "command": "vssharp.explorer.build",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "5_dotnet@1"
+        },
+        {
+          "command": "vssharp.explorer.build",
+          "when": "view == vssharp.explorer.tree && viewItem == solutionFolder",
+          "group": "5_dotnet@1"
+        },
+        {
+          "command": "vssharp.explorer.build",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "5_dotnet@1"
+        },
+        {
+          "command": "vssharp.explorer.run",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "5_dotnet@2"
+        },
+        {
+          "command": "vssharp.explorer.test",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "5_dotnet@3"
+        },
+        {
+          "command": "vssharp.explorer.restore",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "5_dotnet@4"
+        },
+        {
+          "command": "vssharp.explorer.restore",
+          "when": "view == vssharp.explorer.tree && viewItem == solutionFolder",
+          "group": "5_dotnet@4"
+        },
+        {
+          "command": "vssharp.explorer.restore",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "5_dotnet@4"
+        },
+        {
+          "command": "vssharp.explorer.clean",
+          "when": "view == vssharp.explorer.tree && viewItem == solution",
+          "group": "5_dotnet@5"
+        },
+        {
+          "command": "vssharp.explorer.clean",
+          "when": "view == vssharp.explorer.tree && viewItem == solutionFolder",
+          "group": "5_dotnet@5"
+        },
+        {
+          "command": "vssharp.explorer.clean",
+          "when": "view == vssharp.explorer.tree && viewItem == project",
+          "group": "5_dotnet@5"
+        }
       ]
     },
     "configuration": {
@@ -162,13 +465,24 @@
       "properties": {
         "vssharp.explorer.hiddenPatterns": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": [".git", ".DS_Store", "node_modules", "bin", "obj"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".git",
+            ".DS_Store",
+            "node_modules",
+            "bin",
+            "obj"
+          ],
           "description": "Names hidden from the Files tab."
         },
         "vssharp.explorer.defaultTab": {
           "type": "string",
-          "enum": ["solution", "files"],
+          "enum": [
+            "solution",
+            "files"
+          ],
           "default": "solution",
           "description": "Which tab is shown when the view opens."
         }

@@ -35,8 +35,17 @@ apply_patch() {
   replace "s|!!TUNNEL_APP_NAME!!|${TUNNEL_APP_NAME}|g" "$1"
 
   if ! git apply --ignore-whitespace "$1"; then
-    echo failed to apply patch "$1" >&2
-    exit 1
+    if git apply --ignore-whitespace --reverse --check "$1" 2>/dev/null; then
+      echo "patch already applied, skipping: $1"
+    elif reverse_result=$(patch -p1 -R --dry-run -F 5 --force < "$1" 2>&1); then
+      echo "patch already applied (context drift), skipping: $1"
+    elif [ "$(echo "$reverse_result" | grep -c 'hunk.*failed\|out of.*hunk')" -le 1 ] && \
+         echo "$reverse_result" | grep -q 'patching file'; then
+      echo "patch applied and extended (minor drift), skipping: $1"
+    else
+      echo failed to apply patch "$1" >&2
+      exit 1
+    fi
   fi
 
   mv -f $1{.bak,}
