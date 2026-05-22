@@ -3,6 +3,10 @@ vscode*
 VSCode-*/
 VSCodium-*/
 VSCodium/
+
+# VS Sharp source overrides (not the build artifact)
+!vssharp/vscode-overrides/
+!vssharp/vscode-overrides/**
 .DS_Store
 *.env
 assets/

@@ -1,0 +1,28 @@
+/*---------------------------------------------------------------------------------------------
+ * VS Sharp — workbench CSS overrides.
+ *
+ * (Rider-style card layout was attempted then removed — too many upstream CSS
+ *  collisions made it not worth the maintenance. Custom Rider feel is handled
+ *  through `vssharp.defaults.ts` (font/sizing/behaviour) and the bundled fogio
+ *  color + icon themes.)
+ *--------------------------------------------------------------------------------------------*/
+
+/* Hide collapsible section headers in the VS Sharp explorer panel.
+ * Both views (tabs webview + tree) declare name="" → aria-label=" Section".
+ * The JS patch in viewPaneContainer.ts also sets headerVisible=false but
+ * CSS is the reliable backstop regardless of call-order timing. */
+.pane-header[aria-label=" Section"] {
+	display: none !important;
+}
+
+/* Clamp the tabs webview pane to tab-bar height so the tree fills the rest.
+ * VS Code's SplitView JS sets height as inline style continuously; !important
+ * in an author stylesheet overrides inline styles per CSS cascade spec. */
+.split-view-view:has(.view-vssharp-explorer-tabs) {
+	height: 30px !important;
+}
+
+.split-view-view:has(.view-vssharp-explorer-tree) {
+	top: 30px !important;
+	height: calc(100% - 30px) !important;
+}
