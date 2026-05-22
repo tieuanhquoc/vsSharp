@@ -1,17 +1,48 @@
 #!/usr/bin/env bash
 # Generate patches/user/vssharp-*.patch from vssharp/vscode-overrides/.
-# Run this after editing any override file, then run prepare_vscode.sh.
+#
+# IMPORTANT: VSCodium upstream patches (patches/*.patch) are applied BEFORE
+# patches/user/*.patch during prepare_vscode.sh. So our override patches MUST
+# be diffed against the POST-VSCodium state, otherwise line numbers (and
+# sometimes content like "VS Code" → "!!APP_NAME!!") won't match → apply fails.
+#
+# This script ensures vscode/ is in post-VSCodium state by applying every
+# patches/*.patch to a clean baseline before diffing each override.
+#
+# Run after editing any override file, then commit the regenerated patches.
+
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OVERRIDES_DIR="${PROJECT_ROOT}/vssharp/vscode-overrides"
 PATCHES_DIR="${PROJECT_ROOT}/patches/user"
+UPSTREAM_PATCHES_DIR="${PROJECT_ROOT}/patches"
 VSCODE_DIR="${PROJECT_ROOT}/vscode"
 
 if [[ ! -d "${VSCODE_DIR}/.git" ]]; then
   echo "Error: vscode/ not initialized. Run prepare_vscode.sh first." >&2
   exit 1
 fi
+
+apply_upstream_patches_for_file() {
+  local rel_path="$1"
+  # Reset to clean HEAD baseline
+  git -C "${VSCODE_DIR}" checkout -- "${rel_path}" 2>/dev/null || true
+
+  # Apply every patches/*.patch that touches this file
+  shopt -s nullglob
+  for patch in "${UPSTREAM_PATCHES_DIR}"/*.patch; do
+    if grep -q "^diff --git a/${rel_path} b/${rel_path}" "${patch}" 2>/dev/null; then
+      # Extract only the hunks for this file from the patch and apply
+      awk -v target="${rel_path}" '
+        /^diff --git a\// {
+          in_target = ($0 == "diff --git a/" target " b/" target)
+        }
+        in_target { print }
+      ' "${patch}" | ( cd "${VSCODE_DIR}" && git apply --whitespace=nowarn - 2>/dev/null || true )
+    fi
+  done
+}
 
 found=0
 
@@ -23,22 +54,52 @@ while IFS= read -r -d '' override_file; do
     continue
   fi
 
-  # Reset to HEAD baseline before diffing
-  git -C "${VSCODE_DIR}" checkout -- "${rel_path}" 2>/dev/null || true
+  # Apply VSCodium upstream patches that touch this file → post-VSCodium state
+  apply_upstream_patches_for_file "${rel_path}"
 
-  # Temporarily place override in vscode/ so git diff shows correct paths
+  # Place override on top of post-VSCodium state
   cp "${override_file}" "${VSCODE_DIR}/${rel_path}"
 
   basename_noext="$(basename "${rel_path}" | sed 's/\.[^.]*$//')"
   patch_file="${PATCHES_DIR}/vssharp-${basename_noext}.patch"
 
-  git -C "${VSCODE_DIR}" diff "${rel_path}" > "${patch_file}"
+  # Diff working-tree vs HEAD — captures (upstream changes + our override)
+  # but we only want OUR diff (override vs post-upstream). So diff against a
+  # temp "post-upstream" snapshot using git diff --no-index.
+  tmp_baseline=$(mktemp)
+  # Reset to HEAD again into temp, then re-apply upstream patches to it
+  git -C "${VSCODE_DIR}" show "HEAD:${rel_path}" > "${tmp_baseline}"
+  # Re-apply only hunks for this file
+  shopt -s nullglob
+  for patch in "${UPSTREAM_PATCHES_DIR}"/*.patch; do
+    if grep -q "^diff --git a/${rel_path} b/${rel_path}" "${patch}" 2>/dev/null; then
+      awk -v target="${rel_path}" '
+        /^diff --git a\// {
+          in_target = ($0 == "diff --git a/" target " b/" target)
+        }
+        in_target { print }
+      ' "${patch}" | patch -s -p1 -o "${tmp_baseline}.patched" "${tmp_baseline}" 2>/dev/null && mv "${tmp_baseline}.patched" "${tmp_baseline}" || true
+    fi
+  done
 
-  # Leave override applied in vscode/ so the build sees it immediately.
-  # Next run resets to HEAD via the checkout at the top of this loop,
-  # so successive runs still produce a clean diff against the baseline.
+  # Final diff: post-upstream baseline vs override
+  {
+    echo "diff --git a/${rel_path} b/${rel_path}"
+    diff -u "${tmp_baseline}" "${override_file}" \
+      | sed -e "1s|.*|--- a/${rel_path}|" -e "2s|.*|+++ b/${rel_path}|" \
+      | tail -n +1
+  } > "${patch_file}" || true
 
-  echo "Generated + applied: patches/user/vssharp-${basename_noext}.patch"
+  rm -f "${tmp_baseline}"
+
+  # Strip empty patches
+  if [[ ! -s "${patch_file}" ]] || ! grep -q "^@@" "${patch_file}"; then
+    rm -f "${patch_file}"
+    echo "Skipped (no diff): ${rel_path}"
+    continue
+  fi
+
+  echo "Generated: patches/user/vssharp-${basename_noext}.patch"
   found=1
 done < <(find "${OVERRIDES_DIR}" -type f -print0)
 
