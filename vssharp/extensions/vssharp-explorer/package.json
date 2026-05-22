@@ -39,7 +39,8 @@
         {
           "id": "vssharp-explorer-container",
           "title": "VS Sharp Explorer",
-          "icon": "$(files)"
+          "icon": "$(files)",
+          "order": 0
         }
       ]
     },
