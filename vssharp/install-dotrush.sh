@@ -53,10 +53,14 @@ git checkout -q FETCH_HEAD
 git submodule update --init --recursive --depth 1
 
 # Apply local patches (NU1903 bypass etc.)
+# Normalize CRLF → LF first (Windows git autocrlf can corrupt patches)
 shopt -s nullglob
 for patch in "${PATCHES_DIR}"/*.patch; do
   echo "Applying $( basename "${patch}" )"
-  git apply --ignore-whitespace "${patch}"
+  tmp_patch=$( mktemp )
+  tr -d '\r' < "${patch}" > "${tmp_patch}"
+  git apply --ignore-whitespace "${tmp_patch}"
+  rm -f "${tmp_patch}"
 done
 
 # Strip nested .git folders — keep as vendored source so parent repo
