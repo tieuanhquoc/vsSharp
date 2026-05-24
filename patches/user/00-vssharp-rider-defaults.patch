@@ -1,16 +1,16 @@
 diff --git a/src/vs/workbench/media/vssharp.css b/src/vs/workbench/media/vssharp.css
 new file mode 100644
-index 00000000..00000000
+index 00000000..5f7c16b0
 --- /dev/null
 +++ b/src/vs/workbench/media/vssharp.css
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,28 @@
 +/*---------------------------------------------------------------------------------------------
 + * VS Sharp — workbench CSS overrides.
 + *
 + * (Rider-style card layout was attempted then removed — too many upstream CSS
 + *  collisions made it not worth the maintenance. Custom Rider feel is handled
-+ *  through `vssharp.defaults.ts` (font/sizing/behaviour) and the bundled fogio
-+ *  color + icon themes.)
++ *  through `vssharp.defaults.ts` (font/sizing/behaviour) and the bundled
++ *  vssharp-color-theme, vssharp-icons, and vssharp-product-icons extensions.)
 + *--------------------------------------------------------------------------------------------*/
 +
 +/* Hide collapsible section headers in the VS Sharp explorer panel.
@@ -20,9 +20,21 @@ index 00000000..00000000
 +.pane-header[aria-label=" Section"] {
 +	display: none !important;
 +}
++
++/* Clamp the tabs webview pane to tab-bar height so the tree fills the rest.
++ * VS Code's SplitView JS sets height as inline style continuously; !important
++ * in an author stylesheet overrides inline styles per CSS cascade spec. */
++.split-view-view:has(.view-vssharp-explorer-tabs) {
++	height: 30px !important;
++}
++
++.split-view-view:has(.view-vssharp-explorer-tree) {
++	top: 30px !important;
++	height: calc(100% - 30px) !important;
++}
 diff --git a/src/vs/workbench/vssharp.defaults.ts b/src/vs/workbench/vssharp.defaults.ts
 new file mode 100644
-index 00000000..d073b210
+index 00000000..f5b9397a
 --- /dev/null
 +++ b/src/vs/workbench/vssharp.defaults.ts
 @@ -0,0 +1,81 @@
@@ -58,9 +70,9 @@ index 00000000..d073b210
 +	'editor.scrollbar.verticalScrollbarSize': 12,
 +	'editor.scrollbar.horizontalScrollbarSize': 12,
 +
-+	// --- Themes (must match patches/user/00-vssharp-default-themes.patch) ---
-+	'workbench.productIconTheme': 'vssharp-product-icons',
-+	'workbench.iconTheme': 'jetbrains-file-icon-theme-dark',
++	// --- Themes ---
++	'workbench.productIconTheme': 'vssharp-product-icon',
++	'workbench.iconTheme': 'vssharp-file-icon',
 +	'workbench.colorTheme': 'dark-jetbrains-color-theme',
 +	'workbench.preferredDarkColorTheme': 'dark-jetbrains-color-theme',
 +	'workbench.preferredLightColorTheme': 'light-jetbrains-color-theme',
@@ -107,15 +119,3 @@ index 00000000..d073b210
 +
 +Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 +	.registerDefaultConfigurations([{ overrides: VSSHARP_DEFAULTS }]);
-diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
-index f3499b16..512759fd 100644
---- a/src/vs/workbench/workbench.common.main.ts
-+++ b/src/vs/workbench/workbench.common.main.ts
-@@ -445,4 +445,7 @@ import './contrib/editTelemetry/browser/editTelemetry.contribution.js';
- // Opener
- import './contrib/opener/browser/opener.contribution.js';
- 
-+// VS Sharp: register Rider-like default settings (font, sizing, breadcrumbs…).
-+import './vssharp.defaults.js';
-+
- //#endregion

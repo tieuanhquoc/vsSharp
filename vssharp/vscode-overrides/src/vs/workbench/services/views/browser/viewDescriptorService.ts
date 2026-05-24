@@ -99,6 +99,15 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 		this.viewDescriptorsCustomLocations = new Map<string, string>(Object.entries(this.viewCustomizations.viewLocations));
 		this.viewContainerBadgeEnablementStates = new Map<string, boolean>(Object.entries(this.viewCustomizations.viewContainerBadgeEnablementStates));
 
+		// VS Sharp: clear stale Sidebar entries for containers patched to AuxiliaryBar.
+		// Migration from old cachedViewContainerLocations can load Explorer/Debug as Sidebar(0),
+		// which overrides their registered AuxiliaryBar location and causes unwanted auto-open.
+		for (const id of ['workbench.view.explorer', 'workbench.view.debug']) {
+			if (this.viewContainersCustomLocations.get(id) === ViewContainerLocation.Sidebar) {
+				this.viewContainersCustomLocations.delete(id);
+			}
+		}
+
 		// Register all containers that were registered before this ctor
 		this.viewContainers.forEach(viewContainer => this.onDidRegisterViewContainer(viewContainer));
 

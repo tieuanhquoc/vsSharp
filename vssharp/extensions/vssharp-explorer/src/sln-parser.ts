@@ -40,11 +40,14 @@ const FOLDER_GUIDS = new Set<string>([
   '{2150E333-8FDC-42A3-9474-1A3956D46DE8}',
 ]);
 
-// A node is a Solution Folder if and only if its typeGuid is in FOLDER_GUIDS.
-// Extension-based heuristics are unreliable — new project types (.appxproj,
-// .esproj, etc.) would be misclassified as folders if the extension is unknown.
-function classifyAsFolder(typeGuid: string): boolean {
-  return FOLDER_GUIDS.has(typeGuid.toUpperCase());
+const PROJECT_EXTENSIONS = /\.(csproj|vbproj|fsproj|vcxproj|shproj|sqlproj|wixproj)$/i;
+
+type EntryKind = 'solutionFolder' | 'project' | 'unknown';
+
+function classifyEntry(typeGuid: string, relPath: string): EntryKind {
+  if (FOLDER_GUIDS.has(typeGuid.toUpperCase())) return 'solutionFolder';
+  if (PROJECT_EXTENSIONS.test(relPath)) return 'project';
+  return 'unknown';
 }
 
 export async function findSolutionFiles(): Promise<vscode.Uri[]> {
@@ -85,13 +88,14 @@ function parseSln(filePath: string, text: string): SolutionData {
   while ((m = projRe.exec(text)) !== null) {
     const typeGuid = m[1].toUpperCase();
     const relPath = m[3].replace(/\\/g, '/');
-    const isFolder = classifyAsFolder(typeGuid);
+    const kind = classifyEntry(typeGuid, relPath);
+    if (kind === 'unknown') continue;
     projects.push({
       name: m[2],
       relativePath: relPath,
       absolutePath: path.resolve(dir, relPath),
       typeGuid,
-      isFolder,
+      isFolder: kind === 'solutionFolder',
       projectGuid: m[4].toUpperCase(),
     });
   }

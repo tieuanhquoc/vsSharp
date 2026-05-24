@@ -1,0 +1,25 @@
+diff --git a/src/vs/workbench/services/themes/common/workbenchThemeService.ts b/src/vs/workbench/services/themes/common/workbenchThemeService.ts
+--- a/src/vs/workbench/services/themes/common/workbenchThemeService.ts
++++ b/src/vs/workbench/services/themes/common/workbenchThemeService.ts
+@@ -39,12 +39,18 @@
+ }
+ 
+ export namespace ThemeSettingDefaults {
+-	export const COLOR_THEME_DARK = 'Dark 2026';
+-	export const COLOR_THEME_LIGHT = 'Light 2026';
++	// VS Sharp: default to bundled JetBrains color theme.
++	export const COLOR_THEME_DARK = 'dark-jetbrains-color-theme';
++	export const COLOR_THEME_LIGHT = 'light-jetbrains-color-theme';
+ 	export const COLOR_THEME_HC_DARK = 'Default High Contrast';
+ 	export const COLOR_THEME_HC_LIGHT = 'Default High Contrast Light';
+ 
+-	export const FILE_ICON_THEME = 'vs-seti';
++	// VS Sharp: default to bundled JetBrains icon themes.
++	export const FILE_ICON_THEME = 'vssharp-file-icon';
++	// Keep 'Default' — builtInTheme uses this as settingsId. If this matched the
++	// extension theme's settingsId, findThemeBySettingsId would always return the
++	// empty builtInTheme instead of the real extension theme. The actual startup
++	// default is set via registerDefaultConfigurations in vssharp.defaults.ts.
+ 	export const PRODUCT_ICON_THEME = 'Default';
+ }
+ 

@@ -1,0 +1,16 @@
+diff --git a/src/vs/workbench/browser/parts/paneCompositeBar.ts b/src/vs/workbench/browser/parts/paneCompositeBar.ts
+--- a/src/vs/workbench/browser/parts/paneCompositeBar.ts
++++ b/src/vs/workbench/browser/parts/paneCompositeBar.ts
+@@ -432,6 +432,12 @@
+ 		const viewContainerId = isString(viewContainerOrId) ? viewContainerOrId : viewContainerOrId.id;
+ 
+ 		if (viewContainer) {
++			// VS Sharp: containers registered with doNotRegisterOpenCommand have no open command
++			// and no openCommandActionDescriptor — they are intentionally hidden from the UI.
++			// Don't show them in the composite bar either (they appear as phantom tabs otherwise).
++			if (!viewContainer.openCommandActionDescriptor) {
++				return true;
++			}
+ 			if (viewContainer.hideIfEmpty) {
+ 				if (this.viewService.isViewContainerActive(viewContainerId)) {
+ 					return false;

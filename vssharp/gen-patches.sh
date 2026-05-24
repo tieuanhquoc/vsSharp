@@ -106,3 +106,32 @@ done < <(find "${OVERRIDES_DIR}" -type f -print0)
 if [[ "${found}" -eq 0 ]]; then
   echo "No override files found in vssharp/vscode-overrides/."
 fi
+
+# ── New-file patches (not in vscode git HEAD) ──────────────────────────────
+# Bundled into 00-vssharp-rider-defaults.patch using "new file" diff format.
+RIDER_PATCH="${PATCHES_DIR}/00-vssharp-rider-defaults.patch"
+> "${RIDER_PATCH}"  # truncate
+
+while IFS= read -r -d '' override_file; do
+  rel_path="${override_file#${OVERRIDES_DIR}/}"
+
+  # Skip files that ARE in git HEAD — those are handled above
+  if git -C "${VSCODE_DIR}" cat-file -e "HEAD:${rel_path}" 2>/dev/null; then
+    continue
+  fi
+
+  # git diff --no-index exits 1 when files differ (always for /dev/null vs file).
+  # git uses the literal paths given, so "a/" and "b/" will have the full
+  # absolute override path — rewrite both to the correct vscode-relative path.
+  git diff --no-index -- /dev/null "${override_file}" 2>/dev/null | \
+    sed "1s|diff --git a/.* b/.*|diff --git a/${rel_path} b/${rel_path}|" | \
+    sed "s|^+++ b/.*|+++ b/${rel_path}|" \
+    >> "${RIDER_PATCH}" || true
+
+done < <(find "${OVERRIDES_DIR}" -type f -print0 | sort -z)
+
+if [[ -s "${RIDER_PATCH}" ]]; then
+  echo "Generated: patches/user/00-vssharp-rider-defaults.patch (new files)"
+else
+  rm -f "${RIDER_PATCH}"
+fi

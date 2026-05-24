@@ -74,3 +74,48 @@ for SRC in "${VSSHARP_EXT}"/*/; do
 done
 
 echo "vssharp extensions installed."
+
+# ── Strip built-in VS Code themes ──────────────────────────────────────────
+# Remove all optional color/icon theme extensions — replaced by vssharp-color-theme
+# and vssharp-icons. theme-defaults is kept but stripped down to HC themes only.
+echo "Stripping built-in VS Code themes..."
+
+REMOVE_THEMES=(
+  theme-abyss
+  theme-kimbie-dark
+  theme-monokai
+  theme-monokai-dimmed
+  theme-quietlight
+  theme-red
+  theme-solarized-dark
+  theme-solarized-light
+  theme-tomorrow-night-blue
+  theme-seti
+)
+for theme in "${REMOVE_THEMES[@]}"; do
+  if [[ -d "${VSCODE_EXT}/${theme}" ]]; then
+    rm -rf "${VSCODE_EXT}/${theme}"
+    echo "  removed: ${theme}"
+  fi
+done
+
+# Patch theme-defaults: keep only High Contrast themes (needed for accessibility).
+# Removes: Light/Dark 2026, Dark+, Light+, Dark Modern, Light Modern, Visual Studio Dark/Light.
+# Removes: vs-minimal icon theme (replaced by vssharp-file-icon).
+THEME_DEFAULTS_PKG="${VSCODE_EXT}/theme-defaults/package.json"
+if [[ -f "${THEME_DEFAULTS_PKG}" ]]; then
+  python3 - "${THEME_DEFAULTS_PKG}" <<'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    pkg = json.load(f)
+hc_ids = {'Default High Contrast', 'Default High Contrast Light'}
+pkg['contributes']['themes'] = [t for t in pkg['contributes']['themes'] if t['id'] in hc_ids]
+pkg['contributes'].pop('iconThemes', None)
+with open(path, 'w') as f:
+    json.dump(pkg, f, indent=2)
+PYEOF
+  echo "  patched: theme-defaults (High Contrast only)"
+fi
+
+echo "Theme cleanup done."

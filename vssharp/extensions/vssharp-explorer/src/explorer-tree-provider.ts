@@ -2,9 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { FsNode, listDirectory, listWorkspaceRoots } from './file-system';
 import { SolutionData, SolutionProject, findSolutionFiles, parseSolution } from './sln-parser';
-import { FogioIconResolver } from './fogio-icon-resolver';
-
 type Tab = 'solution' | 'files';
+
+interface IconPair { light: vscode.Uri; dark: vscode.Uri }
+interface IconsApi {
+  resolveKind(kind: 'solution' | 'project' | 'solution-folder'): IconPair | undefined;
+  resolveFolder(name: string): IconPair | undefined;
+  resolveFile(name: string): IconPair | undefined;
+}
 
 export type TreeNode =
   | { kind: 'solution'; sln: SolutionData }
@@ -20,13 +25,11 @@ export class ExplorerTreeProvider implements vscode.TreeDataProvider<TreeNode>, 
   private showAll = false;
   private treeView?: vscode.TreeView<TreeNode>;
   private readonly subs: vscode.Disposable[] = [];
-  private readonly icons: FogioIconResolver;
+  private readonly icons: IconsApi;
 
-  constructor(ctx: vscode.ExtensionContext, defaultTab: Tab = 'solution') {
+  constructor(icons: IconsApi, defaultTab: Tab = 'solution') {
     this.tab = defaultTab;
-    this.icons = new FogioIconResolver(ctx.extensionUri);
-    // Load icons then trigger a refresh so first render gets proper icons.
-    this.icons.load().then(() => this.refresh());
+    this.icons = icons;
 
     this.subs.push(vscode.workspace.onDidChangeWorkspaceFolders(() => this.refresh()));
     const slnWatcher = vscode.workspace.createFileSystemWatcher('**/*.{sln,slnx,csproj,fsproj,vbproj}');

@@ -5,11 +5,14 @@ import * as cmd from './context-commands';
 import type { TreeNode } from './explorer-tree-provider';
 import { findSolutionFiles, parseSolution } from './sln-parser';
 
-export function activate(ctx: vscode.ExtensionContext): void {
+export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
   const defaultTab = vscode.workspace.getConfiguration('vssharp.explorer')
     .get<'solution' | 'files'>('defaultTab', 'solution');
 
-  const treeProvider = new ExplorerTreeProvider(ctx, defaultTab);
+  const iconsExt = vscode.extensions.getExtension<any>('vssharp.vssharp-icons');
+  const icons = await iconsExt?.activate();
+
+  const treeProvider = new ExplorerTreeProvider(icons, defaultTab);
   const tabsProvider = new ExplorerTabsProvider(ctx);
 
   // Native tree view — use createTreeView so we can set .message.

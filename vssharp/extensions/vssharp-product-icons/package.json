@@ -2,7 +2,7 @@
   "name": "vssharp-product-icons",
   "private": true,
   "displayName": "VS Sharp Product Icons",
-  "description": "Mixed product icon theme — fogio JetBrains New UI font + JetBrains intellij-community expui SVGs.",
+  "description": "Product icon theme using JetBrains intellij-community expui SVGs.",
   "publisher": "vssharp",
   "version": "1.0.0",
   "license": "MIT",
@@ -11,7 +11,7 @@
   "contributes": {
     "productIconThemes": [
       {
-        "id": "vssharp-product-icons",
+        "id": "vssharp-product-icon",
         "label": "VS Sharp Product Icons",
         "path": "./producticons/vssharp-product-icons.json"
       }

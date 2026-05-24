@@ -14,74 +14,76 @@
   if (state.showNonProjectFiles === undefined) state.showNonProjectFiles = false;
 
   // ---------- icons ----------
-  // Icons come from fogio's vscode-jetbrains-file-icon-theme (MIT). The theme JSON
-  // (fileExtensions / fileNames / folderNames → iconDefinitions → iconPath) is loaded
-  // once per theme and re-loaded when VS Code switches dark ↔ light.
-  // MEDIA_BASE is the webview-resolved root (must use asWebviewUri, plain relative URLs 403).
-  const MEDIA_BASE = document.getElementById('media-base').getAttribute('content');
-  const FOGIO_BASE = `${MEDIA_BASE}/icons/fogio`;
+  // Icons come from vssharp-icons extension (vssharp-file-icons.json).
+  // ICONS_BASE is the webview-resolved root of vssharp-icons/media/.
+  const ICONS_BASE = document.getElementById('icons-base').getAttribute('content');
 
-  // Extensions fogio doesn't list — alias to the closest sibling.
+  // Extensions not in the icon theme — alias to nearest match.
   const EXT_ALIAS = {
     slnx: 'sln',
     fsproj: 'csproj', vbproj: 'csproj', vcxproj: 'csproj',
     aspx: 'cshtml', ascx: 'cshtml', vbhtml: 'cshtml',
   };
 
-  // Solution-tab tree-node icons (sln root, project node, solution folder) map to
-  // fogio iconDefinitions keys.
+  // Map tree node kind to icon definition key in vssharp-file-icons.json.
   const KIND_KEY = {
-    'solution':        'file_sln',
-    'project':         'folder_module',
-    'solution-folder': 'folder_project',
-    'folder':          'folder',
-    'file':            'file_text',
+    'solution':        '_solution',
+    'project':         '_csproj',
+    'solution-folder': '_folder',
+    'folder':          '_folder',
+    'file':            '_file',
   };
 
-  let fogioTheme = null;
-  let fogioLoading = null;
+  let iconTheme = null;
 
   function isDark() {
     return /vscode-(dark|high-contrast(?!-light))/.test(document.body.className);
   }
 
-  async function loadFogioTheme() {
-    const url = `${FOGIO_BASE}/${isDark() ? 'dark' : 'light'}.json`;
-    const res = await fetch(url);
-    fogioTheme = await res.json();
+  async function loadIconTheme() {
+    if (!iconTheme && ICONS_BASE) {
+      const res = await fetch(`${ICONS_BASE}/vssharp-file-icons.json`);
+      iconTheme = await res.json();
+    }
     reapplyAllIcons();
   }
 
+  // Pick the right iconDefinitions for current dark/light mode.
+  function defs() {
+    if (!iconTheme) return null;
+    return isDark() ? iconTheme.iconDefinitions : (iconTheme.light?.iconDefinitions ?? iconTheme.iconDefinitions);
+  }
+
   function keyToUrl(key) {
-    if (!fogioTheme || !key) return null;
-    const def = fogioTheme.iconDefinitions?.[key];
+    const d = defs();
+    if (!d || !key) return null;
+    const def = d[key];
     if (!def?.iconPath) return null;
-    return `${FOGIO_BASE}/${def.iconPath.replace(/^\.\/icons\//, '')}`;
+    return `${ICONS_BASE}/${def.iconPath.replace(/^\.\//, '')}`;
   }
 
   function resolveFile(name) {
-    if (!fogioTheme) return null;
+    if (!iconTheme) return null;
     const lower = name.toLowerCase();
-    const byName = fogioTheme.fileNames?.[lower] ?? fogioTheme.fileNames?.[name];
+    const byName = iconTheme.fileNames?.[lower] ?? iconTheme.fileNames?.[name];
     if (byName) return keyToUrl(byName);
     const dot = lower.indexOf('.');
-    if (dot < 0) return keyToUrl(fogioTheme.file);
-    // try longest compound extension first, then progressively shorter, then alias.
+    if (dot < 0) return keyToUrl(iconTheme.file);
     let ext = lower.slice(dot + 1);
     while (ext) {
       const aliased = EXT_ALIAS[ext] ?? ext;
-      const key = fogioTheme.fileExtensions?.[aliased];
+      const key = iconTheme.fileExtensions?.[aliased];
       if (key) return keyToUrl(key);
       const nextDot = ext.indexOf('.');
       if (nextDot < 0) break;
       ext = ext.slice(nextDot + 1);
     }
-    return keyToUrl(fogioTheme.file);
+    return keyToUrl(iconTheme.file);
   }
 
   function resolveFolder(name) {
-    if (!fogioTheme) return null;
-    const key = fogioTheme.folderNames?.[name.toLowerCase()] ?? fogioTheme.folder;
+    if (!iconTheme) return null;
+    const key = iconTheme.folderNames?.[name.toLowerCase()] ?? iconTheme.folder;
     return keyToUrl(key);
   }
 
@@ -89,17 +91,16 @@
     return keyToUrl(KIND_KEY[kind] ?? null);
   }
 
-  // Render the icon element from its data attrs. Stored attrs let us
-  // re-resolve URLs on theme change without rebuilding the tree.
+  // Stored attrs let us re-resolve URLs on theme change without rebuilding the tree.
   function applyIcon(iconEl, kind, name) {
     if (kind) iconEl.dataset.iconKind = kind;
     if (name !== undefined) iconEl.dataset.iconName = name;
     const k = iconEl.dataset.iconKind;
     const n = iconEl.dataset.iconName ?? '';
     let url = null;
-    if (k === 'file')   url = resolveFile(n);
+    if (k === 'file')        url = resolveFile(n);
     else if (k === 'folder') url = resolveFolder(n);
-    else                url = resolveKind(k);
+    else                     url = resolveKind(k);
     iconEl.style.backgroundImage = url ? `url('${url}')` : '';
   }
 
@@ -107,12 +108,11 @@
     document.querySelectorAll('.icon[data-icon-kind]').forEach(el => applyIcon(el));
   }
 
-  // VS Code toggles theme by swapping body class — re-load the theme JSON and
-  // re-apply every icon.
-  new MutationObserver(() => loadFogioTheme()).observe(document.body, {
+  // VS Code toggles theme by swapping body class — re-apply icons with correct dark/light defs.
+  new MutationObserver(() => reapplyAllIcons()).observe(document.body, {
     attributes: true, attributeFilter: ['class'],
   });
-  fogioLoading = loadFogioTheme();
+  loadIconTheme();
 
   // ---------- request/response (must be initialized before any setActiveTab call) ----------
   const pending = new Map();

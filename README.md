@@ -24,7 +24,7 @@ C# / .NET development on VS Code today funnels users into Microsoft's proprietar
 | Roslyn-powered C# IntelliSense | **DotRush** LSP bundled as built-in (no marketplace install) |
 | Rider-style Solution Explorer with `.sln` parsing | **VS Sharp Explorer** webview, JetBrains New UI icons |
 | Run/Debug from `launchSettings.json` like Visual Studio | **VS Sharp Runner** — multi-profile, concurrent sessions |
-| JetBrains visual identity without trademark assets | fogio New UI themes + product icons (MIT) |
+| JetBrains visual identity without trademark assets | VS Sharp color theme + VS Sharp file icons (JetBrains SVGs) + custom product-icon font built from JetBrains `intellij-community` expui SVGs |
 | FLOSS-only stack, telemetry off | Inherited from VSCodium |
 | Customize and rebrand for your own org | `apply-branding.sh` + `apply-logo.sh` |
 
@@ -44,7 +44,7 @@ A custom webview panel that replaces VS Code's default file explorer. Two tabs i
   - `Properties/` and `wwwroot/` pinned to top of each project (matches Rider)
 - **Files tab** — plain workspace tree (escape hatch when you need raw files outside the solution graph)
 - **Eye toggle** — show/hide non-project files (bin, obj, .git, .DS_Store, dot-files, configurable `vssharp.explorer.hiddenPatterns`)
-- **JetBrains New UI icons** — 186 file SVGs + 44 folder SVGs from `fogio-org/vscode-jetbrains-file-icon-theme` (MIT). Dark and light theme variants follow the workbench theme automatically
+- **JetBrains New UI icons** — file icons from `vssharp-icons` extension (JetBrains expui SVGs, Apache 2.0). Dark and light variants follow the workbench theme automatically via `vssharp-file-icon` theme
 - **Context menu actions** — New File / Folder, Rename, Delete, Duplicate, Copy Relative/Absolute Path, Reveal in Finder, Open in Terminal, Manage NuGet Packages, Build / Clean / Restore / Run / Test (per-project)
 - **Right-click on solution** — Add New Project, Add Existing Project, New Solution Folder, Run Multiple Projects, Publish, Properties
 
@@ -117,8 +117,8 @@ Implementation: `vssharp/extensions/vssharp-explorer/src/{sln-parser,csproj-pars
 ### JetBrains-style chrome
 
 - **JetBrains Mono font** as default `editor.fontFamily` (falls through to Menlo if not installed — `brew install --cask font-jetbrains-mono` to enable)
-- **JetBrains color theme** (fogio, MIT) set as default for both dark and light
-- **JetBrains product icons** (fogio, MIT) set as default — sidebar / activity bar / status bar glyphs in the Rider New UI style
+- **JetBrains color theme** (`vssharp-color-theme`, MIT) set as default for both dark and light
+- **VS Sharp Product Icons** — custom product-icon theme built in-tree (`vssharp-product-icons` extension). The icon font is generated from JetBrains `intellij-community` expui SVGs (Apache 2.0) via `picosvg + fantasticon`: 271 codicons → 135 JetBrains New UI glyphs, mapped through `build/codicon-map.json`. Rebuild via `node vssharp/extensions/vssharp-product-icons/build/build.mjs`
 - **Rider feel defaults** — line-height 1.5, breadcrumbs on, indent guides always, sticky scroll, tree indent 16px, single-click folder expand, custom title bar, auto-save 500ms, no minimap, font ligatures on, smooth caret animation. ~40 keys total registered via `configurationRegistry.registerDefaultConfigurations` so they sit at the lowest precedence — your `settings.json` always wins
 - **Watermark / letterpress** — empty editor area shows VS Sharp logo, theme-tinted (dark logo on light bg, white logo on dark bg, high-contrast variants for HC themes)
 
@@ -147,9 +147,9 @@ User drag-drop is still respected and persisted to workspace storage.
 | Layer | VS Sharp customization |
 |-------|------------------------|
 | Branding | `VS Sharp` name, `com.vssharp` bundle ID, `vssharp` CLI/protocol, custom logo |
-| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger); **VS Sharp Runner**; **VS Sharp Explorer**; **JetBrains Product Icon Theme** (default); **JetBrains Color Theme** (default dark + light) |
-| Icon set | JetBrains New UI file icons + product icons (fogio bundles, MIT) |
-| Color theme | JetBrains New UI color theme (fogio, default dark + light) |
+| Built-in extensions | **DotRush** (Roslyn LSP + .NET debugger); **VS Sharp Runner**; **VS Sharp Explorer**; **VS Sharp Icons** (file icon theme); **VS Sharp Color Theme** (default dark + light); **VS Sharp Product Icons** (custom font) |
+| Icon set | File icons: `vssharp-icons` extension — JetBrains expui SVGs (Apache 2.0), 148 SVGs, dark + light. Product icons: custom font built from JetBrains `intellij-community` expui SVGs |
+| Color theme | JetBrains New UI color theme (`vssharp-color-theme`, default dark + light) |
 | Default Explorer | Hidden (moved to AuxiliaryBar, no UI surface). VS Sharp Explorer replaces it |
 | Default Run/Debug viewlet | Hidden — replaced by VS Sharp Run activity bar entry |
 | Activity bar order | VS Sharp Explorer first, VS Sharp Run second, then built-ins |
@@ -186,11 +186,16 @@ vscodium/                                # repo root (still named vscodium from 
 │   ├── dotrush.patches/                 # local DotRush patches
 │   └── extensions/
 │       ├── dotrush/                     # (gitignored) fetched by install-dotrush.sh
-│       ├── jetbrains-color-theme/       # fogio color theme bundle (MIT)
-│       ├── jetbrains-product-icon-theme/ # fogio product-icon bundle (MIT)
+│       ├── vssharp-color-theme/         # JetBrains New UI color theme (dark + light)
+│       ├── vssharp-icons/               # JetBrains file icon theme (148 SVGs, expui, Apache 2.0)
+│       │   ├── build/build-theme.mjs    #   generates vssharp-file-icons.json + theme.json
+│       │   └── media/icons/             #   source SVGs (dotnet/ + jetbrains/expui/)
+│       ├── vssharp-product-icons/       # custom product-icon font built from JetBrains expui SVGs
+│       │   ├── build/                   #   build.mjs (picosvg + fantasticon) + codicon-map.json
+│       │   ├── icons/expui/             #   source SVGs from intellij-community (Apache 2.0)
+│       │   └── producticons/            #   generated .woff2 + manifest
 │       ├── vssharp-runner/              # custom: launchSettings.json runner
-│       └── vssharp-explorer/            # custom: webview Solution|Files tabs
-│           └── media/icons/fogio/       # fogio file-icon bundle (MIT, ~1.1MB)
+│       └── vssharp-explorer/            # custom: Solution|Files tree view
 ├── apply-version.sh                     # fix vscode/package.json version
 ├── apply-branding.sh                    # rewrite product.json → "VS Sharp"
 ├── apply-logo.sh <png>                  # embed PNG into 5 SVG slots (workbench + 4 letterpress)
@@ -296,27 +301,24 @@ extension's `LICENSE`).
 | Source | License | Bundle location |
 |--------|---------|-----------------|
 | [JaneySprings/DotRush](https://github.com/JaneySprings/DotRush) | MIT | `vssharp/extensions/dotrush/` (fetched + built by `install-dotrush.sh`, pinned commit in `vssharp/dotrush.UPSTREAM.txt`) |
-| [fogio-org/vscode-jetbrains-product-icon-theme](https://github.com/fogio-org/vscode-jetbrains-product-icon-theme) | MIT | `vssharp/extensions/jetbrains-product-icon-theme/` (raw bundle — set as default via `patches/user/`) |
-| [fogio-org/vscode-jetbrains-color-theme](https://github.com/fogio-org/vscode-jetbrains-color-theme) | MIT | `vssharp/extensions/jetbrains-color-theme/` (raw bundle — set as default dark + light via `patches/user/`) |
 
 ### Bundled assets
 
 | Source | License | Bundle location |
 |--------|---------|-----------------|
-| [fogio-org/vscode-jetbrains-file-icon-theme](https://github.com/fogio-org/vscode-jetbrains-file-icon-theme) | MIT | `vssharp/extensions/vssharp-explorer/media/icons/fogio/` — 186 file SVGs + 44 folder SVGs + dark/light theme manifests |
+| [JetBrains/intellij-community — platform/icons expui](https://github.com/JetBrains/intellij-community/tree/master/platform/icons/src/expui) | Apache 2.0 | `vssharp/extensions/vssharp-icons/media/icons/` (148 SVGs — file icon theme) and `vssharp/extensions/vssharp-product-icons/icons/expui/` (source for product-icon font) |
 
 ### Custom (this repo)
 
-VS Sharp Runner, VS Sharp Explorer, branding scripts, install scripts, source
-patches in `patches/user/`, dev tooling — all MIT (this repo's `LICENSE`).
+VS Sharp Runner, VS Sharp Explorer, VS Sharp Icons, VS Sharp Color Theme, VS Sharp Product Icons (font build), branding scripts, install scripts, source patches in `patches/user/`, dev tooling — all MIT (this repo's `LICENSE`).
 
 ### Notes on trademark
 
 Bundled icons are functional glyphs only. **No JetBrains brand assets** (Rider,
-IntelliJ IDEA, ReSharper, JetBrains logos) are redistributed — those are
-trademarks of JetBrains s.r.o. and excluded from all bundles. fogio's icon
-themes follow the same neutral-glyph design principle, matching JetBrains'
-**New UI** visual style without using any protected mark.
+IntelliJ IDEA, ReSharper, JetBrains corporate logos) are redistributed — those
+are trademarks of JetBrains s.r.o. and excluded from all bundles. The expui
+SVGs ship as part of the open-source `intellij-community` project (Apache 2.0)
+and are functional UI glyphs only, not protected marks.
 
 ---
 
@@ -325,5 +327,5 @@ themes follow the same neutral-glyph design principle, matching JetBrains'
 - **[VSCodium](https://github.com/VSCodium/vscodium)** — the FLOSS rebuild infrastructure that makes this fork possible
 - **[Microsoft VS Code](https://github.com/microsoft/vscode)** — the editor itself (MIT source)
 - **[JaneySprings/DotRush](https://github.com/JaneySprings/DotRush)** — open-source Roslyn-based C# language server + debugger
-- **[fogio-org](https://github.com/fogio-org)** — JetBrains New UI-inspired themes (`vscode-jetbrains-file-icon-theme`, `vscode-jetbrains-product-icon-theme`, `vscode-jetbrains-color-theme`), the bedrock of VS Sharp's Rider-like appearance
+- **[JetBrains intellij-community](https://github.com/JetBrains/intellij-community)** — expui SVG glyphs (Apache 2.0). Used as source artwork for both the VS Sharp file icon theme (148 SVGs) and the VS Sharp Product Icons font (codicon-mapped)
 - **JetBrains Mono** font (Apache 2.0) — not bundled, but VS Sharp's default `editor.fontFamily` falls through to it when installed (`brew install --cask font-jetbrains-mono`)

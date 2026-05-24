@@ -27,6 +27,9 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "extensionDependencies": [
+    "vssharp.vssharp-icons"
+  ],
   "contributes": {
     "submenus": [
       {

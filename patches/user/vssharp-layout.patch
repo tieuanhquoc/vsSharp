@@ -1,0 +1,84 @@
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -757,24 +757,49 @@
+ 		};
+ 
+ 		// Sidebar View Container To Restore
+-		if (this.isVisible(Parts.SIDEBAR_PART)) {
+-			let viewContainerToRestore = this.storageService.get(SidebarPart.activeViewletSettingsKey, StorageScope.WORKSPACE, this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id);
++		// VS Sharp: always process sidebar regardless of prior visibility, so vssharp-explorer
++		// can be opened even when the sidebar was previously hidden (e.g. first run or reset).
++		{
++			const sidebarWasVisible = this.isVisible(Parts.SIDEBAR_PART);
++			let viewContainerToRestore = sidebarWasVisible
++				? this.storageService.get(SidebarPart.activeViewletSettingsKey, StorageScope.WORKSPACE, this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id)
++				: undefined;
++
+ 			if (
+ 				!this.environmentService.isBuilt ||
+ 				lifecycleService.startupKind === StartupKind.ReloadedWindow ||
+ 				this.environmentService.isExtensionDevelopment && !this.environmentService.extensionTestsLocationURI
+ 			) {
+ 				// allow to restore a non-default viewlet in development mode or when window reloads
++				// VS Sharp: but if the stored container was relocated away from Sidebar (e.g. Explorer
++				// or Debug moved to AuxiliaryBar by a patch), stale workspace storage would cause an
++				// unwanted fallback-open. Clear it so the sidebar stays hidden.
++				if (viewContainerToRestore) {
++					const container = this.viewDescriptorService.getViewContainerById(viewContainerToRestore);
++					if (container && this.viewDescriptorService.getViewContainerLocation(container) !== ViewContainerLocation.Sidebar) {
++						viewContainerToRestore = undefined;
++					}
++				}
+ 			} else if (
+ 				viewContainerToRestore !== this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id &&
+ 				viewContainerToRestore !== this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id
+ 			) {
+ 				// fallback to default viewlet otherwise if the viewlet is not a default viewlet
+ 				viewContainerToRestore = this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id;
++			}
++
++			// VS Sharp: when no container is selected and we have a workspace, always open
++			// vssharp-explorer-container so users see the file tree immediately on startup.
++			if (!viewContainerToRestore && this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY) {
++				viewContainerToRestore = 'workbench.view.extension.vssharp-explorer-container';
+ 			}
+ 
+ 			if (viewContainerToRestore) {
+ 				this.state.initialization.views.containerToRestore.sideBar = viewContainerToRestore;
++				// Ensure sidebar is shown even when it was previously hidden
++				if (!sidebarWasVisible) {
++					this.stateModel.setRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN, false);
++				}
+ 			} else {
+ 				this.stateModel.setRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN, true);
+ 			}
+@@ -793,7 +818,13 @@
+ 
+ 		// Auxiliary View to restore
+ 		if (this.isVisible(Parts.AUXILIARYBAR_PART)) {
+-			const viewContainerToRestore = this.storageService.get(AuxiliaryBarPart.activeViewSettingsKey, StorageScope.WORKSPACE, this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id);
++			let viewContainerToRestore = this.storageService.get(AuxiliaryBarPart.activeViewSettingsKey, StorageScope.WORKSPACE, this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id);
++			// VS Sharp: Explorer and Debug are relocated to AuxiliaryBar only to hide them
++			// from the sidebar/activity bar — they must not auto-open as the primary
++			// AuxiliaryBar panel on startup (stale workspace storage may point to them).
++			if (viewContainerToRestore === 'workbench.view.explorer' || viewContainerToRestore === 'workbench.view.debug') {
++				viewContainerToRestore = undefined;
++			}
+ 			if (viewContainerToRestore) {
+ 				this.state.initialization.views.containerToRestore.auxiliaryBar = viewContainerToRestore;
+ 			} else {
+@@ -1205,7 +1236,12 @@
+ 		}
+ 
+ 		// finally try to just open the first visible view container
+-		await this.paneCompositeService.openPaneComposite(this.paneCompositeService.getVisiblePaneCompositeIds(location).at(0), location, focus);
++		// VS Sharp: for AuxiliaryBar, skip Explorer/Debug — they are registered there
++		// only to hide them from the sidebar; the fallback must not reveal them.
++		const VSSHARP_HIDDEN_AUXBAR = new Set(['workbench.view.explorer', 'workbench.view.debug']);
++		const firstVisible = this.paneCompositeService.getVisiblePaneCompositeIds(location)
++			.find(id => location !== ViewContainerLocation.AuxiliaryBar || !VSSHARP_HIDDEN_AUXBAR.has(id));
++		await this.paneCompositeService.openPaneComposite(firstVisible, location, focus);
+ 	}
+ 
+ 	registerPart(part: Part): IDisposable {

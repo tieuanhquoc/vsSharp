@@ -1,0 +1,11 @@
+diff --git a/src/vs/workbench/workbench.common.main.ts b/src/vs/workbench/workbench.common.main.ts
+--- a/src/vs/workbench/workbench.common.main.ts
++++ b/src/vs/workbench/workbench.common.main.ts
+@@ -445,4 +445,7 @@
+ // Opener
+ import './contrib/opener/browser/opener.contribution.js';
+ 
++// VS Sharp: register Rider-like default settings (font, sizing, breadcrumbs…).
++import './vssharp.defaults.js';
++
+ //#endregion

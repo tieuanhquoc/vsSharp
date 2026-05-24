@@ -42,9 +42,16 @@ export class ExplorerWebviewProvider implements vscode.WebviewViewProvider, vsco
 
   async resolveWebviewView(view: vscode.WebviewView): Promise<void> {
     this.view = view;
+    const iconsExt = vscode.extensions.getExtension('vssharp.vssharp-icons');
+    const iconsMediaUri = iconsExt
+      ? vscode.Uri.joinPath(iconsExt.extensionUri, 'media')
+      : undefined;
     view.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(this.ctx.extensionUri, 'extension', 'media')],
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.ctx.extensionUri, 'extension', 'media'),
+        ...(iconsMediaUri ? [iconsMediaUri] : []),
+      ],
     };
     view.webview.html = await this.renderHtml(view.webview);
     view.webview.onDidReceiveMessage(msg => this.onMessage(msg as IncomingMessage));
@@ -396,10 +403,15 @@ export class ExplorerWebviewProvider implements vscode.WebviewViewProvider, vsco
     const mediaBase = webview.asWebviewUri(mediaRoot).toString();
     const cssUri = webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'main.css'));
     const jsUri  = webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'main.js'));
+    const iconsExt = vscode.extensions.getExtension('vssharp.vssharp-icons');
+    const iconsBase = iconsExt
+      ? webview.asWebviewUri(vscode.Uri.joinPath(iconsExt.extensionUri, 'media')).toString()
+      : '';
     return html
       .replace(/\{\{cspSource\}\}/g, webview.cspSource)
       .replace(/\{\{nonce\}\}/g, makeNonce())
       .replace(/\{\{mediaBase\}\}/g, mediaBase)
+      .replace(/\{\{iconsBase\}\}/g, iconsBase)
       .replace(/\{\{cssUri\}\}/g, cssUri.toString())
       .replace(/\{\{jsUri\}\}/g, jsUri.toString());
   }
