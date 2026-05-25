@@ -197,6 +197,19 @@ jobs:
             echo "DotRush already built — skipping."
           fi
 
+      - name: Verify DotRush.exe exists
+        run: |
+          echo "=== LanguageServer/ contents ==="
+          ls -la vssharp/extensions/dotrush/extension/bin/LanguageServer/ | head -20
+          if [[ ! -f "vssharp/extensions/dotrush/extension/bin/LanguageServer/DotRush.exe" ]]; then
+            echo "ERROR: DotRush.exe missing — re-publishing with explicit self-contained ..."
+            cd vssharp/extensions/dotrush
+            dotnet publish src/DotRush.Roslyn.Server/DotRush.Roslyn.Server.csproj \
+              -c debug -r win-x64 --self-contained true \
+              -o extension/bin/LanguageServer
+            ls extension/bin/LanguageServer/DotRush.exe || { echo "Still missing!"; exit 1; }
+          fi
+
       # ── Package ───────────────────────────────────────────────────────────
       - name: Build Windows installer
         env:
