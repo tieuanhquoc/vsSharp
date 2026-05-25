@@ -53,13 +53,12 @@ setpath "product" "tipsAndTricksUrl" "https://go.microsoft.com/fwlink/?linkid=85
 setpath "product" "twitterUrl" "https://go.microsoft.com/fwlink/?LinkID=533687"
 
 if [[ "${DISABLE_UPDATE}" != "yes" ]]; then
-  setpath "product" "updateUrl" "https://raw.githubusercontent.com/VSCodium/versions/refs/heads/master"
-
-  if [[ "${VSCODE_QUALITY}" == "insider" ]]; then
-    setpath "product" "downloadUrl" "https://github.com/VSCodium/vscodium-insiders/releases"
-  else
-    setpath "product" "downloadUrl" "https://github.com/VSCodium/vscodium/releases"
-  fi
+  # VS Sharp update channel — served by a Cloudflare Worker that proxies
+  # GitHub Releases of tieuanhquoc/vsSharp into the VS Code update API
+  # schema. Worker source + deploy guide: docs/howto-update-channel.md.
+  # Override at build time with VSSHARP_UPDATE_URL.
+  setpath "product" "updateUrl" "${VSSHARP_UPDATE_URL:-https://vssharp-updates.dotnet.id.vn}"
+  setpath "product" "downloadUrl" "https://github.com/tieuanhquoc/vsSharp/releases"
 
   # if [[ "${OS_NAME}" == "windows" ]]; then
   #   setpath_json "product" "win32VersionedUpdate" "true"
@@ -67,33 +66,36 @@ if [[ "${DISABLE_UPDATE}" != "yes" ]]; then
 fi
 
 if [[ "${VSCODE_QUALITY}" == "insider" ]]; then
-  setpath "product" "nameShort" "VSCodium - Insiders"
-  setpath "product" "nameLong" "VSCodium - Insiders"
-  setpath "product" "applicationName" "codium-insiders"
-  setpath "product" "dataFolderName" ".vscodium-insiders"
-  setpath "product" "linuxIconName" "vscodium-insiders"
+  # VS Sharp Preview — channel for prerelease tags (vX.Y.Z-preview*).
+  # Bundle ID + data folder + CLI are distinct from stable so both apps can
+  # coexist on the same machine and share no settings.
+  setpath "product" "nameShort" "VS Sharp - Preview"
+  setpath "product" "nameLong" "VS Sharp - Preview"
+  setpath "product" "applicationName" "vssharp-preview"
+  setpath "product" "dataFolderName" ".vssharp-preview"
+  setpath "product" "linuxIconName" "vssharp-preview"
   setpath "product" "quality" "insider"
-  setpath "product" "urlProtocol" "vscodium-insiders"
-  setpath "product" "serverApplicationName" "codium-server-insiders"
-  setpath "product" "serverDataFolderName" ".vscodium-server-insiders"
-  setpath "product" "darwinBundleIdentifier" "com.vscodium.VSCodiumInsiders"
-  setpath "product" "win32AppUserModelId" "VSCodium.VSCodiumInsiders"
-  setpath "product" "win32DirName" "VSCodium Insiders"
-  setpath "product" "win32MutexName" "vscodiuminsiders"
-  setpath "product" "win32NameVersion" "VSCodium Insiders"
-  setpath "product" "win32RegValueName" "VSCodiumInsiders"
-  setpath "product" "win32ShellNameShort" "VSCodium Insiders"
-  setpath "product" "win32AppId" "{{EF35BB36-FA7E-4BB9-B7DA-D1E09F2DA9C9}"
-  setpath "product" "win32x64AppId" "{{B2E0DDB2-120E-4D34-9F7E-8C688FF839A2}"
-  setpath "product" "win32arm64AppId" "{{44721278-64C6-4513-BC45-D48E07830599}"
-  setpath "product" "win32UserAppId" "{{ED2E5618-3E7E-4888-BF3C-A6CCC84F586F}"
-  setpath "product" "win32x64UserAppId" "{{20F79D0D-A9AC-4220-9A81-CE675FFB6B41}"
-  setpath "product" "win32arm64UserAppId" "{{2E362F92-14EA-455A-9ABD-3E656BBBFE71}"
-  setpath "product" "tunnelApplicationName" "codium-insiders-tunnel"
-  setpath "product" "win32TunnelServiceMutex" "vscodiuminsiders-tunnelservice"
-  setpath "product" "win32TunnelMutex" "vscodiuminsiders-tunnel"
-  setpath "product" "win32ContextMenu.x64.clsid" "90AAD229-85FD-43A3-B82D-8598A88829CF"
-  setpath "product" "win32ContextMenu.arm64.clsid" "7544C31C-BDBF-4DDF-B15E-F73A46D6723D"
+  setpath "product" "urlProtocol" "vssharp-preview"
+  setpath "product" "serverApplicationName" "vssharp-preview-server"
+  setpath "product" "serverDataFolderName" ".vssharp-preview-server"
+  setpath "product" "tunnelApplicationName" "vssharp-preview-tunnel"
+  setpath "product" "darwinBundleIdentifier" "com.vssharp.preview"
+  setpath "product" "win32AppUserModelId" "VSSharp.VSSharpPreview"
+  setpath "product" "win32DirName" "VS Sharp Preview"
+  setpath "product" "win32MutexName" "vssharppreview"
+  setpath "product" "win32NameVersion" "VS Sharp Preview"
+  setpath "product" "win32RegValueName" "VSSharpPreview"
+  setpath "product" "win32ShellNameShort" "VS Sharp Preview"
+  setpath "product" "win32AppId" "{{C380FB6E-CAA6-4A26-8545-AF4CC20F0AD0}"
+  setpath "product" "win32x64AppId" "{{900767CE-1855-417B-8CB0-53B12C950E98}"
+  setpath "product" "win32arm64AppId" "{{9DA27553-45CB-4AAB-8E1B-910A8FB2DE8A}"
+  setpath "product" "win32UserAppId" "{{7ECFC784-7498-4A0E-A6F6-0ABDCEAF3517}"
+  setpath "product" "win32x64UserAppId" "{{0F14F3E2-80E8-4CF7-9847-C7DB2312978A}"
+  setpath "product" "win32arm64UserAppId" "{{F20746DE-B80C-4FD0-82F5-45DA94E24876}"
+  setpath "product" "win32TunnelServiceMutex" "vssharppreview-tunnelservice"
+  setpath "product" "win32TunnelMutex" "vssharppreview-tunnel"
+  setpath "product" "win32ContextMenu.x64.clsid" "0E5E4755-B685-4E1B-AD28-75929C383E14"
+  setpath "product" "win32ContextMenu.arm64.clsid" "A4D78AFB-10D2-43F3-BD27-1B4A25CEBB10"
 else
   setpath "product" "nameShort" "VS Sharp"
   setpath "product" "nameLong" "VS Sharp"
@@ -228,7 +230,11 @@ mv .npmrc.bak .npmrc
 # package.json
 cp package.json{,.bak}
 
-setpath "package" "version" "${RELEASE_VERSION%-insider}"
+# PACKAGE_VERSION is clean SemVer (e.g. 0.0.2) resolved by vssharp/get-version.sh.
+# VS Code's `version` field is strict SemVer; using RELEASE_VERSION (which may
+# carry prerelease suffix like -preview-01) would break electron-builder, MSI
+# VersionInfo, and Info.plist CFBundleShortVersionString.
+setpath "package" "version" "${PACKAGE_VERSION:-${RELEASE_VERSION%-insider}}"
 
 replace 's|Microsoft Corporation|VS Sharp|' package.json
 

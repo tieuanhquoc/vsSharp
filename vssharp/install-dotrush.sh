@@ -74,7 +74,10 @@ find . -name ".git" -type f -delete 2>/dev/null || true
 #   - diagnostics → extension/bin/Diagnostics/  (dotnet-trace, dotnet-gcdump)
 export PATH="$PATH:$HOME/.dotnet/tools"
 dotnet-cake --target=server
-dotnet-cake --target=debugging
+# --bundle: pre-download ncdbg (netcoredbg) into extension/bin/Debugger/ so the
+# packaged installer is self-contained. Without this, DotRush tries to download
+# at runtime and fails on system-wide installs (Program Files = read-only).
+dotnet-cake --target=debugging --bundle=true
 dotnet-cake --target=diagnostics
 
 # Build TS extension (webpack → extension/main.js)
