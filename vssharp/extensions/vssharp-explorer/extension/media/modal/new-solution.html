@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none';
+                 img-src {{cspSource}} data: https:;
+                 style-src {{cspSource}} 'unsafe-inline';
+                 script-src 'nonce-{{nonce}}';" />
+  <link rel="stylesheet" href="{{cssUri}}" />
+  <style>
+    .modal-content { padding: 24px 28px 8px; }
+    .modal-body { display: block; }
+  </style>
+</head>
+<body>
+<div class="modal-page">
+  <div class="modal-dialog">
+
+    <div class="modal-body">
+      <div class="modal-content">
+        <div id="error-msg" class="error-msg"></div>
+
+        <div class="form-row">
+          <label class="form-label" for="inp-name">Solution name:</label>
+          <div class="form-control">
+            <input class="input" id="inp-name" type="text" value="MySolution" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="inp-dir">Location:</label>
+          <div class="form-control">
+            <div class="input-browse">
+              <input class="input" id="inp-dir" type="text" autocomplete="off" />
+              <button class="browse-btn" id="btn-browse" title="Browse…">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+                  <path d="M1 4.5A1 1 0 012 3.5h4l1.5 1.5H14a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V4.5z"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-hint" id="hint-path"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Type:</span>
+          <div class="form-control">
+            <span class="form-value">Blank Solution</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <span class="status-bar" id="status-bar">
+        <span class="spinner"></span>
+        <span>Creating solution…</span>
+      </span>
+      <button class="btn btn-default" id="btn-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-create">Create</button>
+    </div>
+
+  </div>
+</div>
+
+<script nonce="{{nonce}}" src="{{jsUri}}"></script>
+<script nonce="{{nonce}}">
+(function () {
+  const inpName  = document.getElementById('inp-name');
+  const inpDir   = document.getElementById('inp-dir');
+  const hintPath = document.getElementById('hint-path');
+  const btnCreate = document.getElementById('btn-create');
+  const statusBar = document.getElementById('status-bar');
+  const errorMsg  = document.getElementById('error-msg');
+
+  function updateHint() {
+    const name = inpName.value.trim();
+    const dir  = inpDir.value.trim();
+    hintPath.textContent = (name && dir) ? `Solution will be created in …/${name}/` : '';
+  }
+  inpName.addEventListener('input', updateHint);
+  inpDir.addEventListener('input',  updateHint);
+
+  document.getElementById('btn-browse').addEventListener('click', () => {
+    window.__modal.post('browsedir');
+  });
+  window.__modal.on('dirSelected', msg => {
+    if (msg.dir) { inpDir.value = msg.dir; updateHint(); }
+  });
+
+  window.__modal.on('init', msg => {
+    if (msg.dir) { inpDir.value = msg.dir; updateHint(); }
+  });
+
+  btnCreate.addEventListener('click', () => {
+    const name = inpName.value.trim();
+    const dir  = inpDir.value.trim();
+    if (!name) { showError('Solution name is required.'); return; }
+    if (!dir)  { showError('Location is required.'); return; }
+    errorMsg.classList.remove('visible');
+    setCreating(true);
+    window.__modal.post('create', { name, dir });
+  });
+
+  window.__modal.on('creating',    ()  => setCreating(true));
+  window.__modal.on('createError', msg => { setCreating(false); showError(msg.message ?? 'Unknown error'); });
+
+  function setCreating(on) { btnCreate.disabled = on; statusBar.classList.toggle('visible', on); }
+  function showError(msg)  { errorMsg.textContent = msg; errorMsg.classList.add('visible'); }
+})();
+</script>
+</body>
+</html>

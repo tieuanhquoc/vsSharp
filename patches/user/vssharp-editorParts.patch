@@ -1,0 +1,14 @@
+diff --git a/src/vs/workbench/browser/parts/editor/editorParts.ts b/src/vs/workbench/browser/parts/editor/editorParts.ts
+--- a/src/vs/workbench/browser/parts/editor/editorParts.ts
++++ b/src/vs/workbench/browser/parts/editor/editorParts.ts
+@@ -195,7 +195,9 @@
+ 			...options,
+ 			maximized: options?.maximized ?? this.modalEditorMaximized,
+ 			size: options?.size ?? this.modalEditorSize,
+-			position: options?.position ?? this.modalEditorPosition,
++			// VS Sharp: when the caller provides an explicit size, don't restore the saved
++			// position so the dialog always opens centered (not at the last dragged location).
++			position: options?.position ?? (options?.size ? undefined : this.modalEditorPosition),
+ 			sidebar: options?.sidebar ? {
+ 				...options.sidebar,
+ 				sidebarWidth: options.sidebar.sidebarWidth ?? this.modalEditorSidebarWidth,

@@ -4,6 +4,8 @@ import { ExplorerTreeProvider } from './explorer-tree-provider';
 import * as cmd from './context-commands';
 import type { TreeNode } from './explorer-tree-provider';
 import { findSolutionFiles, parseSolution } from './sln-parser';
+import { openNewProjectModal } from './modals/new-project-modal';
+import { openNewSolutionModal } from './modals/new-solution-modal';
 
 export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
   const defaultTab = vscode.workspace.getConfiguration('vssharp.explorer')
@@ -36,6 +38,9 @@ export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
   ctx.subscriptions.push(treeProvider, tabsProvider, treeView);
   ctx.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ExplorerTabsProvider.viewType, tabsProvider),
+
+    // ── Global (File menu) ───────────────────────────────────────────────────
+    vscode.commands.registerCommand('vssharp.newSolution', () => openNewSolutionModal(ctx)),
 
     // ── Toolbar (view/title fallback) ────────────────────────────────────────
     vscode.commands.registerCommand('vssharp.explorer.refresh', refresh),
@@ -74,7 +79,7 @@ export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
     vscode.commands.registerCommand('vssharp.explorer.test',    (node: TreeNode) => cmd.testProject(node)),
 
     // ── Solution: Add ────────────────────────────────────────────────────────
-    vscode.commands.registerCommand('vssharp.explorer.addNewProject',        (node: TreeNode) => cmd.addNewProject(node)),
+    vscode.commands.registerCommand('vssharp.explorer.addNewProject',        (node: TreeNode) => openNewProjectModal(ctx, node, refresh)),
     vscode.commands.registerCommand('vssharp.explorer.addNewSolutionFolder', (node: TreeNode) => cmd.addNewSolutionFolder(node, refresh)),
     vscode.commands.registerCommand('vssharp.explorer.addExistingProject',   (node: TreeNode) => cmd.addExistingProject(node, refresh)),
 

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none';
+                 img-src {{cspSource}} data: https:;
+                 style-src {{cspSource}} 'unsafe-inline';
+                 script-src 'nonce-{{nonce}}';" />
+  <meta id="icons-base" content="{{iconsBase}}" />
+  <link rel="stylesheet" href="{{cssUri}}" />
+  <style>
+    .sidebar-loading {
+      padding: 12px 10px;
+      font-size: 12px;
+      opacity: 0.5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-loading .spinner { width: 12px; height: 12px; flex: 0 0 12px; }
+  </style>
+</head>
+<body>
+<div class="modal-page">
+  <div class="modal-dialog">
+
+    <!-- ── Body ────────────────────────────────────────────────────────── -->
+    <div class="modal-body">
+
+      <!-- Left sidebar -->
+      <div class="modal-sidebar">
+        <div class="sidebar-search">
+          <div class="sidebar-search-wrap">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+              <circle cx="6.5" cy="6.5" r="4.2"/>
+              <line x1="9.8" y1="9.8" x2="13" y2="13" stroke-linecap="round"/>
+            </svg>
+            <input id="tmpl-search" type="search" placeholder="Search" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Sidebar items rendered dynamically from extension data -->
+        <div class="sidebar-list" id="tmpl-list">
+          <div class="sidebar-loading">
+            <span class="spinner"></span>
+            <span>Loading templates…</span>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="link-btn" id="btn-manage-templates">Manage Templates…</button>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="modal-content">
+        <div id="error-msg" class="error-msg"></div>
+
+        <div class="form-row">
+          <label class="form-label" for="inp-name">Project name:</label>
+          <div class="form-control">
+            <input class="input" id="inp-name" type="text" value="ConsoleApp1" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="inp-dir">Project directory:</label>
+          <div class="form-control">
+            <div class="input-browse">
+              <input class="input" id="inp-dir" type="text" autocomplete="off" />
+              <button class="browse-btn" id="btn-browse" title="Browse…">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+                  <path d="M1 4.5A1 1 0 012 3.5h4l1.5 1.5H14a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V4.5z"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-hint" id="hint-path"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="sel-framework">Target framework:</label>
+          <div class="form-control">
+            <div class="select-row">
+              <select class="select" id="sel-framework">
+                <option value="net10.0">net10.0</option>
+              </select>
+              <span class="sdk-badge" id="sdk-badge">SDK …</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label" for="sel-lang">Language:</label>
+          <div class="form-control">
+            <select class="select" id="sel-lang" style="min-width:90px">
+              <option value="C#">C#</option>
+              <option value="F#">F#</option>
+              <option value="VB">VB</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Type:</span>
+          <div class="form-control">
+            <span class="form-value" id="lbl-type">—</span>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- ── Per-template options (shown/hidden by applyTemplate) ────────── -->
+
+        <!-- Authentication (webapi, webapp, mvc, blazor) -->
+        <div class="form-row" id="row-auth" style="display:none">
+          <label class="form-label" for="sel-auth">Authentication:</label>
+          <div class="form-control">
+            <select class="select" id="sel-auth" style="min-width:200px">
+              <option value="None">None</option>
+              <option value="Individual">Individual Accounts</option>
+              <option value="SingleOrg">Microsoft identity platform</option>
+              <option value="MultiOrg">Microsoft identity platform (multi-org)</option>
+              <option value="Windows">Windows</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Configure HTTPS (webapi, webapp, mvc, blazor) -->
+        <div class="form-row" id="row-https" style="display:none">
+          <span class="form-label"></span>
+          <div class="form-control">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-https" checked />
+              <span class="check-label">Configure for HTTPS</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- OpenAPI / Swagger (webapi only) -->
+        <div class="form-row" id="row-openapi" style="display:none">
+          <span class="form-label"></span>
+          <div class="form-control">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-openapi" checked />
+              <span class="check-label">Enable OpenAPI support</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- API style: Minimal APIs vs Controllers (webapi only) -->
+        <div class="form-row" id="row-controllers" style="display:none">
+          <label class="form-label" for="sel-apitype">API style:</label>
+          <div class="form-control">
+            <select class="select" id="sel-apitype" style="min-width:160px">
+              <option value="minimal">Minimal APIs</option>
+              <option value="controllers">Controllers</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Blazor interactivity (blazor only) -->
+        <div class="form-row" id="row-interactivity" style="display:none">
+          <label class="form-label" for="sel-interactivity">Interactivity:</label>
+          <div class="form-control">
+            <select class="select" id="sel-interactivity" style="min-width:160px">
+              <option value="Server">Server</option>
+              <option value="WebAssembly">WebAssembly</option>
+              <option value="Auto">Auto (Server + WebAssembly)</option>
+              <option value="None">None</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Blazor empty (blazor only) -->
+        <div class="form-row" id="row-emptycontent" style="display:none">
+          <span class="form-label"></span>
+          <div class="form-control">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-empty" />
+              <span class="check-label">Do not include sample content</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Top-level statements (console, worker, grpc) -->
+        <div class="form-row" id="row-toplevel" style="display:none">
+          <span class="form-label"></span>
+          <div class="form-control">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-toplevel" />
+              <span class="check-label">Do not use top-level statements</span>
+              <span class="help-icon" title="Generates a traditional Program class with a Main method">?</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Native AOT (console, worker, grpc) -->
+        <div class="form-row" id="row-aot" style="display:none">
+          <span class="form-label"></span>
+          <div class="form-control">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-aot" />
+              <span class="check-label">Publish as Native AOT</span>
+              <span class="help-icon" title="Enables ahead-of-time compilation to a native binary. Reduces startup time and memory usage.">?</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Docker (console, web, webapi, worker, mvc, grpc, blazor) -->
+        <div class="form-row" id="row-docker" style="display:none">
+          <span class="form-label">Docker:</span>
+          <div class="form-control" style="gap:5px;">
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-dockerfile" checked />
+              <span class="check-label">Add Dockerfile</span>
+            </label>
+            <label class="checkbox-row">
+              <input type="checkbox" id="chk-compose" />
+              <span class="check-label">Add Docker Compose file</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Collapsible: Template description -->
+        <div class="collapsible" id="sect-desc">
+          <div class="collapsible-trigger" data-target="sect-desc">
+            <span class="collapsible-arrow"></span>
+            <span>Template description</span>
+          </div>
+          <div class="collapsible-body">
+            <p class="form-hint" id="lbl-desc"></p>
+          </div>
+        </div>
+
+        <!-- Collapsible: Advanced Settings -->
+        <div class="collapsible" id="sect-advanced">
+          <div class="collapsible-trigger" data-target="sect-advanced">
+            <span class="collapsible-arrow"></span>
+            <span>Advanced Settings</span>
+          </div>
+          <div class="collapsible-body">
+            <div class="form-row" style="margin-top:8px;">
+              <label class="form-label" for="sel-nullable">Nullable:</label>
+              <div class="form-control">
+                <select class="select" id="sel-nullable" style="min-width:110px">
+                  <option value="enable">Enable</option>
+                  <option value="disable">Disable</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label" for="inp-sln-folder">Solution folder:</label>
+              <div class="form-control">
+                <input class="input" id="inp-sln-folder" type="text" placeholder="(root)" autocomplete="off" />
+                <span class="form-hint">Virtual folder in the solution to add this project under.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /modal-content -->
+    </div><!-- /modal-body -->
+
+    <!-- ── Footer ──────────────────────────────────────────────────────── -->
+    <div class="modal-footer">
+      <span class="status-bar" id="status-bar">
+        <span class="spinner"></span>
+        <span>Creating project…</span>
+      </span>
+      <button class="btn btn-default" id="btn-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-create">Create</button>
+    </div>
+
+  </div><!-- /modal-dialog -->
+</div><!-- /modal-page -->
+
+<script nonce="{{nonce}}" src="{{jsUri}}"></script>
+<script nonce="{{nonce}}">
+(function () {
+  // ── State ─────────────────────────────────────────────────────────────────
+  let allTemplates = [];   // full filtered list from extension
+  let activeTmpl   = null; // currently selected ProjectTemplate object
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const tmplList       = document.getElementById('tmpl-list');
+  const tmplSearch     = document.getElementById('tmpl-search');
+  const inpName        = document.getElementById('inp-name');
+  const inpDir         = document.getElementById('inp-dir');
+  const hintPath       = document.getElementById('hint-path');
+  const sdkBadge       = document.getElementById('sdk-badge');
+  const selFramework   = document.getElementById('sel-framework');
+  const selLang        = document.getElementById('sel-lang');
+  const lblType        = document.getElementById('lbl-type');
+  const lblDesc        = document.getElementById('lbl-desc');
+  const btnCreate      = document.getElementById('btn-create');
+  const statusBar      = document.getElementById('status-bar');
+  const errorMsg       = document.getElementById('error-msg');
+
+  // Conditional option rows
+  const rowAuth         = document.getElementById('row-auth');
+  const rowHttps        = document.getElementById('row-https');
+  const rowOpenApi      = document.getElementById('row-openapi');
+  const rowControllers  = document.getElementById('row-controllers');
+  const rowInteract     = document.getElementById('row-interactivity');
+  const rowEmpty        = document.getElementById('row-emptycontent');
+  const rowTopLevel     = document.getElementById('row-toplevel');
+  const rowAot          = document.getElementById('row-aot');
+  const rowDocker       = document.getElementById('row-docker');
+
+  // ── Render sidebar from template array ────────────────────────────────────
+  function renderSidebar(templates) {
+    allTemplates = templates;
+    tmplList.innerHTML = '';
+
+    if (!templates.length) {
+      tmplList.innerHTML = '<div class="sidebar-loading">No templates found.</div>';
+      return;
+    }
+
+    let currentCategory = null;
+    templates.forEach((tmpl, idx) => {
+      if (tmpl.category !== currentCategory) {
+        currentCategory = tmpl.category;
+        const label = document.createElement('div');
+        label.className = 'sidebar-group-label';
+        label.textContent = tmpl.category;
+        tmplList.appendChild(label);
+      }
+
+      const item = document.createElement('div');
+      item.className = 'sidebar-item' + (idx === 0 ? ' active' : '');
+      item.dataset.id = tmpl.id;
+      item.innerHTML =
+        `<span class="item-icon">${tmpl.iconSvg}</span>` +
+        `<span class="item-label">${tmpl.label}</span>`;
+
+      item.addEventListener('click', () => selectItem(item, tmpl));
+      tmplList.appendChild(item);
+
+      if (idx === 0) {
+        activeTmpl = tmpl;
+        applyTemplate(tmpl);
+      }
+    });
+  }
+
+  // ── Select sidebar item ───────────────────────────────────────────────────
+  function selectItem(itemEl, tmpl) {
+    tmplList.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    itemEl.classList.add('active');
+    activeTmpl = tmpl;
+    applyTemplate(tmpl);
+  }
+
+  // ── Apply template metadata to the form ───────────────────────────────────
+  function applyTemplate(tmpl) {
+    lblType.textContent = tmpl.type;
+    lblDesc.textContent = tmpl.description;
+
+    const o = tmpl.options;
+    rowAuth.style.display        = o.auth          ? '' : 'none';
+    rowHttps.style.display       = o.https         ? '' : 'none';
+    rowOpenApi.style.display     = o.openApi       ? '' : 'none';
+    rowControllers.style.display = o.controllers   ? '' : 'none';
+    rowInteract.style.display    = o.interactivity ? '' : 'none';
+    rowEmpty.style.display       = o.emptyContent  ? '' : 'none';
+    rowTopLevel.style.display    = o.topLevel      ? '' : 'none';
+    rowAot.style.display         = o.aot           ? '' : 'none';
+    rowDocker.style.display      = o.docker        ? '' : 'none';
+
+    // Reset options to safe defaults when switching templates
+    document.getElementById('sel-auth').value           = 'None';
+    document.getElementById('chk-https').checked        = true;
+    document.getElementById('chk-openapi').checked      = true;
+    document.getElementById('sel-apitype').value        = 'minimal';
+    document.getElementById('sel-interactivity').value  = 'Server';
+    document.getElementById('chk-empty').checked        = false;
+    document.getElementById('chk-toplevel').checked     = false;
+    document.getElementById('chk-aot').checked          = false;
+    document.getElementById('chk-dockerfile').checked   = true;
+    document.getElementById('chk-compose').checked      = false;
+
+    // Rebuild language options based on what this template supports
+    selLang.innerHTML = tmpl.languages
+      .map(l => `<option value="${l}">${l}</option>`)
+      .join('');
+  }
+
+  // ── Search filter ─────────────────────────────────────────────────────────
+  tmplSearch.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    let currentGroupEl = null;
+
+    tmplList.childNodes.forEach(node => {
+      if (!(node instanceof HTMLElement)) return;
+      if (node.classList.contains('sidebar-group-label')) {
+        currentGroupEl = node;
+        node.style.display = 'none';
+        return;
+      }
+      if (!node.classList.contains('sidebar-item')) return;
+
+      const tmplId    = node.dataset.id ?? '';
+      const labelText = node.querySelector('.item-label')?.textContent ?? '';
+      const match     = !q || (tmplId + labelText).toLowerCase().includes(q);
+
+      node.style.display = match ? '' : 'none';
+      if (match && currentGroupEl) currentGroupEl.style.display = '';
+    });
+  });
+
+  // ── Path hint ─────────────────────────────────────────────────────────────
+  function updateHint() {
+    const name = inpName.value.trim();
+    const dir  = inpDir.value.trim();
+    hintPath.textContent = (name && dir) ? `The project will be created in …/${name}` : '';
+  }
+  inpName.addEventListener('input', updateHint);
+  inpDir.addEventListener('input', updateHint);
+
+  // ── Browse folder ─────────────────────────────────────────────────────────
+  document.getElementById('btn-browse').addEventListener('click', () => {
+    window.__modal.post('browsedir');
+  });
+  window.__modal.on('dirSelected', msg => {
+    if (msg.dir) { inpDir.value = msg.dir; updateHint(); }
+  });
+
+  // ── Manage Templates link ─────────────────────────────────────────────────
+  document.getElementById('btn-manage-templates').addEventListener('click', () => {
+    window.__modal.post('manageTemplates');
+  });
+
+  // ── Init from extension (called twice: placeholder + real data) ───────────
+  window.__modal.on('init', msg => {
+    if (msg.dir) { inpDir.value = msg.dir; updateHint(); }
+
+    if (msg.sdk) sdkBadge.textContent = 'from SDK ' + msg.sdk;
+
+    if (msg.frameworks?.length) {
+      selFramework.innerHTML = msg.frameworks
+        .map(f => `<option value="${f}">${f}</option>`)
+        .join('');
+    }
+
+    if (msg.templates?.length) {
+      // Preserve current selection when real data arrives after placeholder
+      const prevId = activeTmpl?.id;
+      renderSidebar(msg.templates);
+      if (prevId) {
+        const matchEl   = tmplList.querySelector(`[data-id="${prevId}"]`);
+        const matchTmpl = allTemplates.find(t => t.id === prevId);
+        if (matchEl && matchTmpl) selectItem(matchEl, matchTmpl);
+      }
+    }
+  });
+
+  // ── Create ────────────────────────────────────────────────────────────────
+  btnCreate.addEventListener('click', () => {
+    const name = inpName.value.trim();
+    const dir  = inpDir.value.trim();
+
+    if (!name) { showError('Project name is required.'); return; }
+    if (!dir)  { showError('Project directory is required.'); return; }
+    if (!activeTmpl) { showError('Select a project template.'); return; }
+
+    errorMsg.classList.remove('visible');
+    setCreating(true);
+
+    window.__modal.post('create', {
+      name,
+      dir,
+      template:        activeTmpl.id,
+      framework:       selFramework.value,
+      language:        selLang.value,
+      // Per-template options
+      auth:            document.getElementById('sel-auth').value,
+      configureHttps:  document.getElementById('chk-https').checked,
+      enableOpenApi:   document.getElementById('chk-openapi').checked,
+      useControllers:  document.getElementById('sel-apitype').value === 'controllers',
+      interactivity:   document.getElementById('sel-interactivity').value,
+      emptyContent:    document.getElementById('chk-empty').checked,
+      noTopLevel:      document.getElementById('chk-toplevel').checked,
+      enableAot:       document.getElementById('chk-aot').checked,
+      addDockerfile:   document.getElementById('chk-dockerfile').checked,
+      addDockerCompose: document.getElementById('chk-compose').checked,
+      nullable:        document.getElementById('sel-nullable').value,
+      solutionFolder:  document.getElementById('inp-sln-folder').value.trim(),
+    });
+  });
+
+  window.__modal.on('creating',     ()  => setCreating(true));
+  window.__modal.on('createError',  msg => { setCreating(false); showError(msg.message ?? 'Unknown error'); });
+
+  function setCreating(on) {
+    btnCreate.disabled = on;
+    statusBar.classList.toggle('visible', on);
+  }
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('visible');
+  }
+})();
+</script>
+</body>
+</html>

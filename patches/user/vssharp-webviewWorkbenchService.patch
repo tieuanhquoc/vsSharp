@@ -1,0 +1,31 @@
+diff --git a/src/vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService.ts b/src/vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService.ts
+--- a/src/vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService.ts
++++ b/src/vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService.ts
+@@ -10,7 +10,7 @@
+ import { Emitter, Event } from '../../../../base/common/event.js';
+ import { Iterable } from '../../../../base/common/iterator.js';
+ import { combinedDisposable, Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
+-import { EditorActivation } from '../../../../platform/editor/common/editor.js';
++import { EditorActivation, IModalEditorPartOptions } from '../../../../platform/editor/common/editor.js';
+ import { createDecorator, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { IThemeService } from '../../../../platform/theme/common/themeService.js';
+ import { GroupIdentifier } from '../../../common/editor.js';
+@@ -25,6 +25,8 @@
+ export interface IWebViewShowOptions {
+ 	readonly group?: IEditorGroup | GroupIdentifier | ACTIVE_GROUP_TYPE | SIDE_GROUP_TYPE;
+ 	readonly preserveFocus?: boolean;
++	/** VS Sharp: forwarded to IEditorOptions.modal when MODAL_GROUP is used. */
++	readonly modal?: IModalEditorPartOptions;
+ }
+ 
+ export const IWebviewWorkbenchService = createDecorator<IWebviewWorkbenchService>('webviewEditorService');
+@@ -285,7 +287,8 @@
+ 			preserveFocus: showOptions.preserveFocus,
+ 			// preserve pre 1.38 behaviour to not make group active when preserveFocus: true
+ 			// but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
+-			activation: showOptions.preserveFocus ? EditorActivation.RESTORE : undefined
++			activation: showOptions.preserveFocus ? EditorActivation.RESTORE : undefined,
++			modal: showOptions.modal,
+ 		}, showOptions.group);
+ 		return webviewInput;
+ 	}

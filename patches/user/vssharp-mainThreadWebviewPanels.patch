@@ -1,0 +1,51 @@
+diff --git a/src/vs/workbench/api/browser/mainThreadWebviewPanels.ts b/src/vs/workbench/api/browser/mainThreadWebviewPanels.ts
+--- a/src/vs/workbench/api/browser/mainThreadWebviewPanels.ts
++++ b/src/vs/workbench/api/browser/mainThreadWebviewPanels.ts
+@@ -17,7 +17,7 @@
+ import { IWebViewShowOptions, IWebviewWorkbenchService } from '../../contrib/webviewPanel/browser/webviewWorkbenchService.js';
+ import { editorGroupToColumn } from '../../services/editor/common/editorGroupColumn.js';
+ import { GroupLocation, GroupsOrder, IEditorGroup, IEditorGroupsService, preferredSideBySideGroupDirection } from '../../services/editor/common/editorGroupsService.js';
+-import { ACTIVE_GROUP, IEditorService, PreferredGroup, SIDE_GROUP } from '../../services/editor/common/editorService.js';
++import { ACTIVE_GROUP, IEditorService, MODAL_GROUP, PreferredGroup, SIDE_GROUP } from '../../services/editor/common/editorService.js';
+ import { IExtensionService } from '../../services/extensions/common/extensions.js';
+ import { IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+ import * as extHostProtocol from '../common/extHost.protocol.js';
+@@ -156,9 +156,12 @@
+ 		showOptions: extHostProtocol.WebviewPanelShowOptions,
+ 	): void {
+ 		const targetGroup = this.getTargetGroupFromShowOptions(showOptions);
++		const isVsSharpModal = targetGroup === MODAL_GROUP && viewType.startsWith('vssharp.modal');
+ 		const mainThreadShowOptions: IWebViewShowOptions = showOptions ? {
+ 			preserveFocus: !!showOptions.preserveFocus,
+-			group: targetGroup
++			group: targetGroup,
++			// VS Sharp: apply size encoded as vssharp.modal@WxH viewType suffix
++			modal: isVsSharpModal ? { size: parseVsSharpModalSize(viewType) } : undefined,
+ 		} : {};
+ 
+ 		const extension = reviveWebviewExtension(extensionData);
+@@ -206,6 +209,11 @@
+ 	}
+ 
+ 	private getTargetGroupFromShowOptions(showOptions: extHostProtocol.WebviewPanelShowOptions): PreferredGroup {
++		// VS Sharp: MODAL_GROUP must be checked before the isEmpty fallback below
++		if (showOptions.viewColumn === MODAL_GROUP) {
++			return MODAL_GROUP;
++		}
++
+ 		if (typeof showOptions.viewColumn === 'undefined'
+ 			|| showOptions.viewColumn === ACTIVE_GROUP
+ 			|| (this._editorGroupService.count === 1 && this._editorGroupService.activeGroup.isEmpty)
+@@ -337,6 +345,12 @@
+ 	}
+ }
+ 
++/** VS Sharp: parse optional size from vssharp.modal@WxH viewType suffix. */
++function parseVsSharpModalSize(viewType: string): { width: number; height: number } | undefined {
++	const m = /^vssharp\.modal@(\d+)x(\d+)$/.exec(viewType);
++	return m ? { width: parseInt(m[1], 10), height: parseInt(m[2], 10) } : undefined;
++}
++
+ function reviveWebviewIcon(value: extHostProtocol.IWebviewIconPath | undefined): WebviewIconPath | undefined {
+ 	if (!value) {
+ 		return undefined;

@@ -1,0 +1,16 @@
+diff --git a/src/vs/platform/editor/common/editor.ts b/src/vs/platform/editor/common/editor.ts
+--- a/src/vs/platform/editor/common/editor.ts
++++ b/src/vs/platform/editor/common/editor.ts
+@@ -362,6 +362,12 @@
+ 	 * after the modal editor is opened.
+ 	 */
+ 	readonly sidebar?: IModalEditorSidebar;
++
++	/**
++	 * VS Sharp: When true, hides the modal header chrome (title bar and action buttons).
++	 * The editor content fills the full dialog height.
++	 */
++	readonly hideHeader?: boolean;
+ }
+ 
+ /**

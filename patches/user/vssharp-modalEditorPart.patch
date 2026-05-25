@@ -1,0 +1,76 @@
+diff --git a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+--- a/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
++++ b/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+@@ -208,8 +208,21 @@
+ 		});
+ 		shadowElement.appendChild(editorPartContainer);
+ 
++		// VS Sharp: when hideHeader, collapse header to an 8px transparent drag strip so the
++		// user can still drag-to-move the dialog without any visible VS Code chrome.
++		const effectiveHeaderHeight = options?.hideHeader ? 8 : MODAL_HEADER_HEIGHT;
++
+ 		// Header
+ 		const headerElement = editorPartContainer.appendChild($('.modal-editor-header'));
++		if (options?.hideHeader) {
++			headerElement.style.height = '8px';
++			headerElement.style.minHeight = '8px';
++			headerElement.style.padding = '0';
++			headerElement.style.overflow = 'hidden';
++			headerElement.style.cursor = 'move';
++			headerElement.style.background = 'transparent';
++			headerElement.style.borderBottom = 'none';
++		}
+ 
+ 		// Sidebar toggle button (only when sidebar is configured)
+ 		const sidebarToggleContainer = append(headerElement, $('div.modal-editor-sidebar-toggle'));
+@@ -258,7 +271,7 @@
+ 		const actionBarContainer = append(headerElement, $('div.modal-editor-action-container'));
+ 
+ 		// Sidebar
+-		const sidebarResult = this.createSidebar(editorPartContainer, options?.sidebar, disposables);
++		const sidebarResult = this.createSidebar(editorPartContainer, options?.sidebar, disposables, effectiveHeaderHeight);
+ 		if (sidebarResult) {
+ 			if (sidebarResult.isVisible()) {
+ 				editorPartContainer.classList.add('has-sidebar');
+@@ -543,8 +556,8 @@
+ 			// Update editor part layout during resize
+ 			const size = resizableElement.size;
+ 			const sidebarWidth = sidebarResult?.getWidth() ?? 0;
+-			editorPart.layout(Math.max(0, size.width - MODAL_BORDER_SIZE - sidebarWidth), size.height - MODAL_BORDER_SIZE - MODAL_HEADER_HEIGHT, 0, 0);
+-			sidebarResult?.layout(size.height - MODAL_BORDER_SIZE - MODAL_HEADER_HEIGHT);
++			editorPart.layout(Math.max(0, size.width - MODAL_BORDER_SIZE - sidebarWidth), size.height - MODAL_BORDER_SIZE - effectiveHeaderHeight, 0, 0);
++			sidebarResult?.layout(size.height - MODAL_BORDER_SIZE - effectiveHeaderHeight);
+ 
+ 			if (e.done) {
+ 				isResizing = false;
+@@ -636,8 +649,8 @@
+ 				resizableElement.domNode.style.top = `${top}px`;
+ 			}
+ 
+-			editorPart.layout(Math.max(0, width - MODAL_BORDER_SIZE - (sidebarResult?.getWidth() ?? 0)), height - MODAL_BORDER_SIZE - MODAL_HEADER_HEIGHT, 0, 0);
+-			sidebarResult?.layout(height - MODAL_BORDER_SIZE - MODAL_HEADER_HEIGHT);
++			editorPart.layout(Math.max(0, width - MODAL_BORDER_SIZE - (sidebarResult?.getWidth() ?? 0)), height - MODAL_BORDER_SIZE - effectiveHeaderHeight, 0, 0);
++			sidebarResult?.layout(height - MODAL_BORDER_SIZE - effectiveHeaderHeight);
+ 		};
+ 		disposables.add(Event.runAndSubscribe(this.layoutService.onDidLayoutMainContainer, layoutModal));
+ 		disposables.add(editorPart.onDidChangeMaximized(() => layoutModal()));
+@@ -657,7 +670,7 @@
+ 		};
+ 	}
+ 
+-	private createSidebar(container: HTMLElement, content: IModalEditorSidebar | undefined, disposables: DisposableStore): IModalEditorSidebarController | undefined {
++	private createSidebar(container: HTMLElement, content: IModalEditorSidebar | undefined, disposables: DisposableStore, headerHeight = MODAL_HEADER_HEIGHT): IModalEditorSidebarController | undefined {
+ 		if (!content) {
+ 			return undefined;
+ 		}
+@@ -678,8 +691,8 @@
+ 		// Sash for resizing sidebar
+ 		const sash = disposables.add(new Sash(container, {
+ 			getVerticalSashLeft: () => sidebarWidth,
+-			getVerticalSashTop: () => MODAL_HEADER_HEIGHT,
+-			getVerticalSashHeight: () => (container.clientHeight - MODAL_HEADER_HEIGHT),
++			getVerticalSashTop: () => headerHeight,
++			getVerticalSashHeight: () => (container.clientHeight - headerHeight),
+ 		}, { orientation: Orientation.VERTICAL }));
+ 		if (!visible) {
+ 			sash.state = SashState.Disabled;

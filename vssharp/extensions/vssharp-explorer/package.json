@@ -66,6 +66,11 @@
     },
     "commands": [
       {
+        "command": "vssharp.newSolution",
+        "title": "New Solution...",
+        "category": "VS Sharp"
+      },
+      {
         "command": "vssharp.explorer.refresh",
         "title": "Refresh",
         "icon": "$(refresh)",
@@ -232,6 +237,12 @@
         {
           "command": "vssharp.explorer.addExistingProject",
           "group": "2_existing@1"
+        }
+      ],
+      "menuBar/file": [
+        {
+          "command": "vssharp.newSolution",
+          "group": "1_new@3"
         }
       ],
       "view/item/context": [
