@@ -68,8 +68,13 @@ done
 find . -name ".git" -type d -prune -exec rm -rf {} + 2>/dev/null || true
 find . -name ".git" -type f -delete 2>/dev/null || true
 
-# Build C# server, debugger, diagnostics
+# Build C# server, debugger, diagnostics. All 3 are required at runtime:
+#   - server      → extension/bin/LanguageServer/ (Roslyn LSP)
+#   - debugging   → extension/bin/Debugger/, DebuggerMono/, DevHost/
+#   - diagnostics → extension/bin/Diagnostics/  (dotnet-trace, dotnet-gcdump)
 export PATH="$PATH:$HOME/.dotnet/tools"
+dotnet-cake --target=server
+dotnet-cake --target=debugging
 dotnet-cake --target=diagnostics
 
 # Build TS extension (webpack → extension/main.js)
