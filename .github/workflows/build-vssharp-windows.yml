@@ -2,6 +2,12 @@ name: Build VS Sharp - Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      allow_unsigned_dotrush:
+        description: Allow unsigned DotRush binaries for internal test builds only
+        required: false
+        type: boolean
+        default: false
   release:
     types: [published]
 
@@ -192,30 +198,68 @@ jobs:
           npm install --prefer-offline
           npm run compile
 
-      - name: Bundle extensions into vscode/
-        run: ./vssharp/extend-prepare.sh
-
       # ── DotRush (skip if already built) ──────────────────────────────────
       - name: Build DotRush
         run: |
-          if [[ ! -d "vssharp/extensions/dotrush/extension/bin" ]]; then
+          if [[ ! -d "vssharp/extensions/dotrush" ]]; then
             ./vssharp/install-dotrush.sh
+          elif ! ./vssharp/verify-dotrush-runtime.sh "vssharp/extensions/dotrush"; then
+            echo "DotRush exists but runtime is incomplete - rebuilding from pinned upstream ..."
+            ./vssharp/install-dotrush.sh --force
           else
             echo "DotRush already built — skipping."
           fi
 
-      - name: Verify DotRush.exe exists
+      - name: Verify DotRush runtime
         run: |
-          echo "=== LanguageServer/ contents ==="
-          ls -la vssharp/extensions/dotrush/extension/bin/LanguageServer/ | head -20
-          if [[ ! -f "vssharp/extensions/dotrush/extension/bin/LanguageServer/DotRush.exe" ]]; then
-            echo "ERROR: DotRush.exe missing — re-publishing with explicit self-contained ..."
-            cd vssharp/extensions/dotrush
-            dotnet publish src/DotRush.Roslyn.Server/DotRush.Roslyn.Server.csproj \
-              -c debug -r win-x64 --self-contained true \
-              -o extension/bin/LanguageServer
-            ls extension/bin/LanguageServer/DotRush.exe || { echo "Still missing!"; exit 1; }
-          fi
+          ./vssharp/verify-dotrush-runtime.sh "vssharp/extensions/dotrush"
+
+      - name: Sign DotRush Windows binaries
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        env:
+          WINDOWS_CODESIGN_PFX_BASE64: ${{ secrets.WINDOWS_CODESIGN_PFX_BASE64 }}
+          WINDOWS_CODESIGN_PFX_PASSWORD: ${{ secrets.WINDOWS_CODESIGN_PFX_PASSWORD }}
+          WINDOWS_CODESIGN_TIMESTAMP_URL: ${{ vars.WINDOWS_CODESIGN_TIMESTAMP_URL }}
+        run: |
+          $allowUnsigned = "${{ github.event_name == 'workflow_dispatch' && inputs.allow_unsigned_dotrush }}" -eq "true"
+          $required = -not $allowUnsigned
+          ./vssharp/sign-windows-binaries.ps1 `
+            -Path "vssharp/extensions/dotrush/extension/bin" `
+            -Required:$required
+
+      - name: Defender scan DotRush server
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        run: |
+          $server = "vssharp/extensions/dotrush/extension/bin/LanguageServer/DotRush.exe"
+          if (-not (Test-Path $server)) {
+            throw "DotRush server missing before Defender scan: $server"
+          }
+
+          $mpScan = Get-Command Start-MpScan -ErrorAction SilentlyContinue
+          if (-not $mpScan) {
+            Write-Warning "Start-MpScan not available; skipping Defender scan."
+            exit 0
+          }
+
+          $since = (Get-Date).AddMinutes(-5)
+          Start-MpScan -ScanPath $server -ScanType CustomScan
+          $serverPath = (Resolve-Path $server).Path
+          $hits = Get-MpThreatDetection -ErrorAction SilentlyContinue |
+            Where-Object {
+              $_.InitialDetectionTime -ge $since -and
+              ($_.Resources -match [regex]::Escape($serverPath) -or $_.Resources -match "DotRush\.exe")
+            }
+
+          if ($hits) {
+            $hits | Format-List *
+            throw "Windows Defender flagged DotRush.exe."
+          }
+
+      - name: Bundle extensions into vscode/
+        run: ./vssharp/extend-prepare.sh
+
+      - name: Verify bundled DotRush runtime
+        run: ./vssharp/verify-dotrush-runtime.sh "vscode/extensions/dotrush"
 
       # ── Package ───────────────────────────────────────────────────────────
       - name: Build Windows installer
@@ -227,6 +271,9 @@ jobs:
           vs2022_install: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools"
           npm_config_python: ${{ env.pythonLocation }}\python.exe
         run: ./dev/build.sh -s -p
+
+      - name: Verify packaged DotRush runtime
+        run: ./vssharp/verify-dotrush-runtime.sh "vscode/extensions/dotrush"
 
       # ── Artifacts ─────────────────────────────────────────────────────────
       - name: Upload installers

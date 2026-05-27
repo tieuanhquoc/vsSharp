@@ -34,6 +34,10 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
         ( cd "vscode/extensions/${NAME}" && npm install --production --ignore-scripts --no-audit --no-fund --prefer-offline )
       fi
     done
+
+    if [[ "${OS_NAME}" == "windows" && -d "vssharp/extensions/dotrush" ]]; then
+      ./vssharp/verify-dotrush-runtime.sh "vscode/extensions/dotrush"
+    fi
   fi
 
   cd vscode || { echo "'vscode' dir not found"; exit 1; }
