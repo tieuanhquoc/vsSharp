@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import { discoverProjectProfiles, ProjectProfile, profileLabel, findProjectByFile } from './launch-settings';
+import { discoverProjectProfiles, ProjectProfile, profileLabel } from './launch-settings';
 import { ProfileStore, describeProfile, keyOf } from './profile-store';
 import { ProfileRunner } from './profile-runner';
 import { SessionManager } from './session-manager';
 import { ProfileTreeProvider } from './profile-tree';
 import { RunningStatusBar } from './running-status-bar';
+import { resolveActiveProfileForFile } from './profile-resolver';
 
 export async function activate(ctx: vscode.ExtensionContext): Promise<void> {
   const store = new ProfileStore(ctx.workspaceState);
@@ -84,19 +85,24 @@ async function runForActiveEditor(
   kind: 'run' | 'debug',
 ): Promise<void> {
   const editor = vscode.window.activeTextEditor;
-  let target: ProjectProfile | undefined;
 
-  if (editor) {
-    const match = findProjectByFile(store.profiles, editor.document.uri.fsPath);
-    if (match) {
-      target = store.selectedForProject(match.projectPath) ?? match;
-    }
-  }
-  target = target ?? store.selected;
-  if (!target) {
-    vscode.window.showInformationMessage('No profile available. Open a .NET project with Properties/launchSettings.json.');
+  const resolution = resolveActiveProfileForFile(
+    store.profiles,
+    editor?.document.uri.fsPath,
+    projectPath => store.selectedProfileNameForProject(projectPath),
+  );
+
+  if (resolution.kind === 'noActiveFile') {
+    vscode.window.showErrorMessage('No active editor file to run.');
     return;
   }
+
+  if (resolution.kind === 'noSupportedProject') {
+    vscode.window.showErrorMessage('No supported Project launch profile found for active file.');
+    return;
+  }
+
+  const target = resolution.profile;
   try {
     if (kind === 'run') await runner.run(target);
     else await runner.debug(target);

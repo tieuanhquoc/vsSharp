@@ -177,11 +177,18 @@ jobs:
         run: |
           cd vssharp/extensions/vssharp-runner
           npm install --prefer-offline
+          npm test
           npm run compile
 
       - name: Build vssharp-explorer
         run: |
           cd vssharp/extensions/vssharp-explorer
+          npm install --prefer-offline
+          npm run compile
+
+      - name: Build vssharp-icons
+        run: |
+          cd vssharp/extensions/vssharp-icons
           npm install --prefer-offline
           npm run compile
 

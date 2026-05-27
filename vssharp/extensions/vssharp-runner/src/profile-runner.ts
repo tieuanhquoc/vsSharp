@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import { ProjectProfile, parseTargetFramework } from './launch-settings';
+import { ProjectProfile } from './launch-settings';
 import { keyOf } from './profile-store';
-import { Session, SessionManager } from './session-manager';
+import { SessionManager } from './session-manager';
+import { parseTargetFrameworkFromProjectXml, resolveTargetPath } from './msbuild-output';
+import { splitCommandLineArgs } from './profile-resolver';
+import { isActiveSessionStatus } from './session-state';
 
 export class ProfileRunner implements vscode.Disposable {
   private readonly subs: vscode.Disposable[] = [];
@@ -17,7 +19,7 @@ export class ProfileRunner implements vscode.Disposable {
 
   async run(p: ProjectProfile): Promise<void> {
     const existing = this.sessions.get(keyOf(p));
-    if (existing && existing.status !== 'stopped') {
+    if (existing && isActiveSessionStatus(existing.status)) {
       vscode.window.showInformationMessage(`${p.profileName} is already running. Stop it first.`);
       return;
     }
@@ -25,72 +27,107 @@ export class ProfileRunner implements vscode.Disposable {
     const task = this.buildRunTask(p);
     const execution = await vscode.tasks.executeTask(task);
     this.sessions.register({
-      profile: p, kind: 'run', status: 'running',
-      startedAt: new Date(), taskExecution: execution,
+      profile: p,
+      kind: 'run',
+      status: 'running',
+      startedAt: new Date(),
+      taskExecution: execution,
     });
   }
 
   async debug(p: ProjectProfile): Promise<void> {
     const existing = this.sessions.get(keyOf(p));
-    if (existing && existing.status !== 'stopped') {
+    if (existing && isActiveSessionStatus(existing.status)) {
       vscode.window.showInformationMessage(`${p.profileName} is already running. Stop it first.`);
       return;
     }
+
     const wsFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(p.projectPath));
     if (!wsFolder) {
-      vscode.window.showErrorMessage(`Project not in workspace: ${p.projectPath}`);
+      vscode.window.showErrorMessage('Project is outside the current workspace.');
       return;
     }
 
-    this.sessions.register({ profile: p, kind: 'debug', status: 'starting', startedAt: new Date() });
+    this.sessions.register({ profile: p, kind: 'debug', status: 'building', startedAt: new Date() });
 
     const built = await this.runBuildTask(p);
     if (!built) {
-      this.sessions.remove(keyOf(p));
-      vscode.window.showErrorMessage('Build failed — debug aborted');
+      const message = `Build failed. See terminal: Build ${p.projectName}.`;
+      this.fail(p, message);
+      vscode.window.showErrorMessage(message);
       return;
     }
 
-    const tf = await parseTargetFramework(p.projectPath);
+    let projectXml: string;
+    try {
+      projectXml = await this.readProjectXml(p.projectPath);
+    } catch {
+      const message = 'Cannot resolve output DLL from MSBuild metadata.';
+      this.fail(p, message);
+      vscode.window.showErrorMessage(message);
+      return;
+    }
+
+    const tf = parseTargetFrameworkFromProjectXml(projectXml);
     if (!tf) {
-      this.sessions.remove(keyOf(p));
-      vscode.window.showErrorMessage(`No <TargetFramework> in ${p.projectName}.csproj`);
+      const message = `No <TargetFramework> in ${p.projectName}.csproj`;
+      this.fail(p, message);
+      vscode.window.showErrorMessage(message);
       return;
     }
 
-    const program = path.join(p.projectDir, 'bin', this.getConfiguration(), tf, `${p.projectName}.dll`);
+    const program = await resolveTargetPath({
+      dotnetPath: this.getDotnet(),
+      projectPath: p.projectPath,
+      configuration: this.getConfiguration(),
+      targetFramework: tf,
+      cwd: p.projectDir,
+    });
+    if (!program || !(await this.fileExists(program))) {
+      const message = 'Cannot resolve output DLL from MSBuild metadata.';
+      this.fail(p, message);
+      vscode.window.showErrorMessage(message);
+      return;
+    }
+
     const config = this.buildDebugConfig(p, program);
     const ok = await vscode.debug.startDebugging(wsFolder, config);
     if (!ok) {
-      this.sessions.remove(keyOf(p));
-      vscode.window.showErrorMessage(`Failed to start debug for ${p.profileName}`);
+      const message = `Failed to start debug for ${p.profileName}`;
+      this.fail(p, message);
+      vscode.window.showErrorMessage(message);
     }
   }
 
   async stop(profileKey: string): Promise<void> {
     const s = this.sessions.get(profileKey);
     if (!s) return;
+
     if (s.kind === 'debug' && s.debugSession) {
       await vscode.debug.stopDebugging(s.debugSession);
     } else if (s.kind === 'run' && s.taskExecution) {
       s.taskExecution.terminate();
     }
-    // Cleanup happens in event handlers
-  }
 
-  // ---------- internals ----------
+    this.sessions.update(profileKey, { status: 'stopped', message: 'Stopped.' });
+  }
 
   private onTaskEnded(e: vscode.TaskProcessEndEvent): void {
     for (const s of this.sessions.getAll()) {
-      if (s.taskExecution === e.execution) { this.sessions.remove(keyOf(s.profile)); break; }
+      if (s.taskExecution !== e.execution) continue;
+      if (s.status === 'stopped') break;
+      this.sessions.update(keyOf(s.profile), e.exitCode === 0
+        ? { status: 'stopped', message: 'Stopped.' }
+        : { status: 'failed', message: `Run failed with exit code ${e.exitCode ?? 'unknown'}.` });
+      break;
     }
   }
 
   private onDebugStarted(ds: vscode.DebugSession): void {
     for (const s of this.sessions.getAll()) {
-      if (s.kind !== 'debug' || s.status !== 'starting') continue;
-      if (ds.name === `${s.profile.projectName} • ${s.profile.profileName}`) {
-        this.sessions.update(keyOf(s.profile), { status: 'running', debugSession: ds });
+      if (s.kind !== 'debug' || s.status !== 'building') continue;
+      if (ds.name === this.debugName(s.profile)) {
+        this.sessions.update(keyOf(s.profile), { status: 'debugging', debugSession: ds, message: undefined });
         break;
       }
     }
@@ -98,8 +135,15 @@ export class ProfileRunner implements vscode.Disposable {
 
   private onDebugTerminated(ds: vscode.DebugSession): void {
     for (const s of this.sessions.getAll()) {
-      if (s.debugSession === ds) { this.sessions.remove(keyOf(s.profile)); break; }
+      if (s.debugSession === ds) {
+        this.sessions.update(keyOf(s.profile), { status: 'stopped', message: 'Stopped.' });
+        break;
+      }
     }
+  }
+
+  private fail(p: ProjectProfile, message: string): void {
+    this.sessions.update(keyOf(p), { status: 'failed', message });
   }
 
   private getDotnet(): string {
@@ -113,7 +157,7 @@ export class ProfileRunner implements vscode.Disposable {
   private buildRunTask(p: ProjectProfile): vscode.Task {
     const args = ['run', '--project', p.projectPath, '--launch-profile', p.profileName,
                   '--configuration', this.getConfiguration()];
-    if (p.profile.commandLineArgs) args.push('--', p.profile.commandLineArgs);
+    if (p.profile.commandLineArgs) args.push('--', ...splitCommandLineArgs(p.profile.commandLineArgs));
 
     const exec = new vscode.ShellExecution(this.getDotnet(), args, {
       cwd: p.profile.workingDirectory ?? p.projectDir,
@@ -122,7 +166,7 @@ export class ProfileRunner implements vscode.Disposable {
     const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(p.projectPath)) ?? vscode.TaskScope.Workspace;
     const task = new vscode.Task(
       { type: 'vssharp-runner', profile: p.profileName, project: p.projectName },
-      folder, `${p.projectName} • ${p.profileName}`, 'VS Sharp', exec,
+      folder, this.debugName(p), 'VS Sharp', exec,
     );
     task.presentationOptions = { reveal: vscode.TaskRevealKind.Always, clear: true, panel: vscode.TaskPanelKind.Dedicated };
     return task;
@@ -148,13 +192,27 @@ export class ProfileRunner implements vscode.Disposable {
     });
   }
 
+  private async readProjectXml(projectPath: string): Promise<string> {
+    const buf = await vscode.workspace.fs.readFile(vscode.Uri.file(projectPath));
+    return Buffer.from(buf).toString('utf8');
+  }
+
+  private async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private buildDebugConfig(p: ProjectProfile, program: string): vscode.DebugConfiguration {
     return {
       type: 'coreclr',
-      name: `${p.projectName} • ${p.profileName}`,
+      name: this.debugName(p),
       request: 'launch',
       program,
-      args: this.splitArgs(p.profile.commandLineArgs),
+      args: splitCommandLineArgs(p.profile.commandLineArgs),
       cwd: p.profile.workingDirectory ?? p.projectDir,
       stopAtEntry: false,
       console: 'internalConsole',
@@ -172,13 +230,8 @@ export class ProfileRunner implements vscode.Disposable {
     return base;
   }
 
-  private splitArgs(s?: string): string[] {
-    if (!s) return [];
-    const out: string[] = [];
-    const re = /"([^"]*)"|(\S+)/g;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(s)) !== null) out.push(m[1] ?? m[2]);
-    return out;
+  private debugName(p: ProjectProfile): string {
+    return `${p.projectName} \u2022 ${p.profileName}`;
   }
 
   dispose(): void { this.subs.forEach(d => d.dispose()); }

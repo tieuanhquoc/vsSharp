@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ProjectProfile, profileLabel } from './launch-settings';
+import { selectedForProject as resolveSelectedForProject } from './profile-resolver';
 
 const KEY_GLOBAL = 'vssharp.runner.selectedProfile';
 const KEY_PER_PROJECT = 'vssharp.runner.selectedPerProject';
@@ -36,12 +37,11 @@ export class ProfileStore {
   selectedForProject(projectPath: string): ProjectProfile | undefined {
     const map = this.perProjectMap;
     const name = map[projectPath];
-    const inProject = this._profiles.filter(p => p.projectPath === projectPath);
-    if (name) {
-      const hit = inProject.find(p => p.profileName === name);
-      if (hit) return hit;
-    }
-    return inProject[0];
+    return resolveSelectedForProject(this._profiles, projectPath, name);
+  }
+
+  selectedProfileNameForProject(projectPath: string): string | undefined {
+    return this.perProjectMap[projectPath];
   }
 
   async select(p: ProjectProfile): Promise<void> {

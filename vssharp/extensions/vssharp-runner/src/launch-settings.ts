@@ -1,50 +1,50 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import {
+  createProfileEntries,
+  findProjectForFile,
+  LaunchProfile,
+  ProfileDiscoveryEntry,
+  ProjectProfile,
+  runnableProfiles,
+} from './profile-resolver';
 
-export interface LaunchProfile {
-  commandName: 'Project' | 'Executable' | 'IISExpress' | 'IIS' | 'Docker' | string;
-  executablePath?: string;
-  commandLineArgs?: string;
-  workingDirectory?: string;
-  launchBrowser?: boolean;
-  launchUrl?: string;
-  applicationUrl?: string;
-  environmentVariables?: Record<string, string>;
-  dotnetRunMessages?: boolean;
-}
-
-export interface ProjectProfile {
-  projectPath: string;       // absolute path to .csproj
-  projectName: string;       // basename without .csproj
-  projectDir: string;        // dirname of .csproj
-  profileName: string;       // key in profiles
-  profile: LaunchProfile;
-  launchSettingsPath: string;
-}
+export {
+  findProjectForFile,
+  LaunchProfile,
+  ProfileDiscoveryEntry,
+  ProjectProfile,
+  splitCommandLineArgs,
+} from './profile-resolver';
 
 const SETTINGS_GLOB = '**/Properties/launchSettings.json';
 const SETTINGS_EXCLUDE = '{**/node_modules/**,**/extensions/**,**/.git/**,**/bin/**,**/obj/**,**/packages/**}';
 
+interface ParseProfilesResult {
+  profiles: Record<string, LaunchProfile>;
+  parseError?: unknown;
+}
+
 export async function discoverProjectProfiles(): Promise<ProjectProfile[]> {
+  return runnableProfiles(await discoverProfileEntries());
+}
+
+export async function discoverProfileEntries(): Promise<ProfileDiscoveryEntry[]> {
   const uris = await vscode.workspace.findFiles(SETTINGS_GLOB, SETTINGS_EXCLUDE);
-  const result: ProjectProfile[] = [];
+  const result: ProfileDiscoveryEntry[] = [];
 
   for (const uri of uris) {
     const launchSettingsPath = uri.fsPath;
     const projectDir = path.dirname(path.dirname(launchSettingsPath));
     const projectPath = await findCsprojIn(projectDir);
-    if (!projectPath) continue;
+    const parsed = await parseProfiles(launchSettingsPath);
 
-    const profiles = await parseProfiles(launchSettingsPath);
-    const projectName = path.basename(projectPath, '.csproj');
-
-    for (const [profileName, profile] of Object.entries(profiles)) {
-      if (profile.commandName === 'IISExpress' || profile.commandName === 'IIS') continue;
-      result.push({
-        projectPath, projectName, projectDir,
-        profileName, profile, launchSettingsPath,
-      });
-    }
+    result.push(...createProfileEntries({
+      launchSettingsPath,
+      projectPath,
+      profiles: parsed.profiles,
+      parseError: parsed.parseError,
+    }));
   }
 
   return result;
@@ -63,26 +63,25 @@ async function findCsprojIn(dir: string): Promise<string | undefined> {
   return undefined;
 }
 
-async function parseProfiles(filePath: string): Promise<Record<string, LaunchProfile>> {
+async function parseProfiles(filePath: string): Promise<ParseProfilesResult> {
   try {
     const buf = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
     const text = Buffer.from(buf).toString('utf8');
-    // Strip BOM (VS often saves with UTF-8 BOM) + comments (// and /* */)
     const stripped = text
-      .replace(/^﻿/, '')
+      .replace(/^\uFEFF/, '')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '')
       .trim();
     const data = JSON.parse(stripped);
-    return data?.profiles ?? {};
+    return { profiles: data?.profiles ?? {} };
   } catch (err) {
     console.warn(`[vssharp-runner] failed to parse ${filePath}:`, err);
-    return {};
+    return { profiles: {}, parseError: err };
   }
 }
 
 export function profileLabel(p: ProjectProfile): string {
-  return `${p.projectName} • ${p.profileName}`;
+  return `${p.projectName} \u2022 ${p.profileName}`;
 }
 
 /**
@@ -93,12 +92,7 @@ export function findProjectByFile(
   profiles: readonly ProjectProfile[],
   filePath: string,
 ): ProjectProfile | undefined {
-  const sep = path.sep;
-  const matches = profiles.filter(p =>
-    filePath === p.projectDir || filePath.startsWith(p.projectDir + sep));
-  if (matches.length === 0) return undefined;
-  matches.sort((a, b) => b.projectDir.length - a.projectDir.length);
-  return matches[0];
+  return findProjectForFile(profiles, filePath);
 }
 
 export async function parseTargetFramework(csprojPath: string): Promise<string | undefined> {

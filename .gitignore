@@ -30,6 +30,7 @@ font-size/generate-css.js
 
 # VS Sharp dev environment
 .venv/
+.build-tools/
 .claude/settings.local.json
 
 # Node / npm
@@ -40,6 +41,7 @@ npm-debug.log*
 # vssharp generic build artifacts
 vssharp/extensions/*/node_modules/
 vssharp/extensions/*/out/
+vssharp/extensions/*/out-test/
 
 # Third-party extensions fetched by vssharp/install-*.sh (not committed).
 # Pin commit + local patches live in vssharp/<name>.UPSTREAM.txt + vssharp/<name>.patches/.

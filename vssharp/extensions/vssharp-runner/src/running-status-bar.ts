@@ -21,9 +21,10 @@ export class RunningStatusBar implements vscode.Disposable {
       this.item.hide();
       return;
     }
+
     const hasDebug = active.some(s => s.kind === 'debug');
-    this.item.text = `$(${hasDebug ? 'debug-alt' : 'play-circle'}) ${active.length} running`;
-    this.item.tooltip = active.map(s => `${s.profile.projectName} • ${s.profile.profileName} (${s.kind})`).join('\n');
+    this.item.text = `$(${hasDebug ? 'debug-alt' : 'play-circle'}) ${active.length} active`;
+    this.item.tooltip = active.map(s => `${s.profile.projectName} \u2022 ${s.profile.profileName} (${s.status})`).join('\n');
     this.item.show();
   }
 

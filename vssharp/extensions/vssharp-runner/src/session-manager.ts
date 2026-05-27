@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
 import { ProjectProfile } from './launch-settings';
 import { keyOf } from './profile-store';
+import { isActiveSessionStatus, SessionKind, SessionStatus } from './session-state';
 
-export type SessionKind = 'run' | 'debug';
-export type SessionStatus = 'starting' | 'running' | 'stopped';
+export { SessionKind, SessionStatus } from './session-state';
 
 export interface Session {
   profile: ProjectProfile;
   kind: SessionKind;
   status: SessionStatus;
   startedAt: Date;
+  message?: string;
   taskExecution?: vscode.TaskExecution;
   debugSession?: vscode.DebugSession;
 }
@@ -44,7 +45,7 @@ export class SessionManager implements vscode.Disposable {
   }
 
   getActive(): Session[] {
-    return [...this.sessions.values()].filter(s => s.status !== 'stopped');
+    return [...this.sessions.values()].filter(s => isActiveSessionStatus(s.status));
   }
 
   dispose(): void { this._onDidChange.dispose(); }

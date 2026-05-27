@@ -9,6 +9,7 @@
   "main": "./extension/main.js",
   "scripts": {
     "compile": "webpack --mode production",
+    "test": "tsc -p tsconfig.test.json && node --test out-test/test/**/*.test.js",
     "watch": "webpack --mode development --watch"
   },
   "devDependencies": {
@@ -71,17 +72,17 @@
       "view/item/context": [
         {
           "command": "vssharp.runner.run",
-          "when": "view == vssharp.runner.profiles && viewItem == vssharp.profile.idle",
+          "when": "view == vssharp.runner.profiles && viewItem =~ /vssharp.profile.(idle|failed)/",
           "group": "inline@1"
         },
         {
           "command": "vssharp.runner.debug",
-          "when": "view == vssharp.runner.profiles && viewItem == vssharp.profile.idle",
+          "when": "view == vssharp.runner.profiles && viewItem =~ /vssharp.profile.(idle|failed)/",
           "group": "inline@2"
         },
         {
           "command": "vssharp.runner.stop",
-          "when": "view == vssharp.runner.profiles && viewItem =~ /vssharp.profile.(running|debugging)/",
+          "when": "view == vssharp.runner.profiles && viewItem =~ /vssharp.profile.(building|running|debugging)/",
           "group": "inline@1"
         }
       ],
@@ -111,9 +112,9 @@
       }
     ],
     "keybindings": [
-      { "command": "vssharp.runner.debug", "key": "f5",      "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus" },
-      { "command": "vssharp.runner.run",   "key": "ctrl+f5", "when": "vssharp.runner.hasProfiles && !inDebugMode" },
-      { "command": "vssharp.runner.run",   "key": "cmd+f5",  "when": "vssharp.runner.hasProfiles && !inDebugMode && isMac", "mac": "cmd+f5" }
+      { "command": "vssharp.runner.debugActive", "key": "f5",      "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus" },
+      { "command": "vssharp.runner.runActive",   "key": "ctrl+f5", "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus" },
+      { "command": "vssharp.runner.runActive",   "key": "cmd+f5",  "when": "vssharp.runner.hasProfiles && !inDebugMode && editorTextFocus && isMac", "mac": "cmd+f5" }
     ],
     "configuration": {
       "title": "VS Sharp Runner",
