@@ -21,16 +21,42 @@ DEST="${PROJECT_ROOT}/src/stable/resources/win32"
 if [[ -f "${PROJECT_ROOT}/.venv/bin/activate" ]]; then
   # shellcheck disable=SC1091
   . "${PROJECT_ROOT}/.venv/bin/activate"
+elif [[ -f "${PROJECT_ROOT}/.venv/Scripts/activate" ]]; then
+  # shellcheck disable=SC1091
+  . "${PROJECT_ROOT}/.venv/Scripts/activate"
 fi
 
-python3 -c "from PIL import Image" 2>/dev/null || {
+# Determine python executable
+if command -v python.exe &>/dev/null; then
+  PYTHON_EXE="python.exe"
+elif command -v python &>/dev/null; then
+  PYTHON_EXE="python"
+elif command -v python3 &>/dev/null; then
+  PYTHON_EXE="python3"
+else
+  echo "Error: Python is not installed or not in PATH." >&2
+  exit 1
+fi
+
+$PYTHON_EXE -c "from PIL import Image" 2>/dev/null || {
   echo "Installing Pillow ..."
-  pip install --quiet Pillow
+  $PYTHON_EXE -m pip install --quiet Pillow
 }
+# Convert Unix/WSL paths to Windows-native paths for Windows-native Python
+if command -v cygpath &>/dev/null; then
+  PNG_SRC_WIN=$(cygpath -w "$PNG_SRC")
+  DEST_WIN=$(cygpath -w "$DEST")
+elif command -v wslpath &>/dev/null; then
+  PNG_SRC_WIN=$(wslpath -w "$PNG_SRC")
+  DEST_WIN=$(wslpath -w "$DEST")
+else
+  PNG_SRC_WIN="$PNG_SRC"
+  DEST_WIN="$DEST"
+fi
 
 mkdir -p "${DEST}"
 
-python3 - "$PNG_SRC" "$DEST" <<'PYEOF'
+$PYTHON_EXE - "$PNG_SRC_WIN" "$DEST_WIN" <<'PYEOF'
 import sys
 from pathlib import Path
 from PIL import Image, ImageOps
@@ -42,7 +68,7 @@ logo = Image.open(src_path).convert("RGBA")
 
 # ── 1. code.ico — multi-resolution app icon ───────────────────────────────────
 ico_sizes = [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
-logo.save(dest / "code.ico", format="ICO", sizes=ico_sizes)
+logo.save(dest / "code.ico", format="ICO", sizes=ico_sizes, bitmap_format="bmp")
 print(f"  {dest/'code.ico'}  ({len(ico_sizes)} resolutions)")
 
 # ── 2. Inno Setup wizard banners ──────────────────────────────────────────────

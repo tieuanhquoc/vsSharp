@@ -5,17 +5,39 @@
 # --- Node via nvm (project-local, not global) ---
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 # shellcheck disable=SC1091
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-nvm use --delete-prefix --silent 2>/dev/null || nvm use --silent
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use --delete-prefix --silent 2>/dev/null || nvm use --silent
+fi
 
 # --- Python via project venv ---
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-# shellcheck disable=SC1091
-. "${PROJECT_ROOT}/.venv/bin/activate"
+# Support both Unix (bin/activate) and Windows (Scripts/activate)
+if [ -f "${PROJECT_ROOT}/.venv/bin/activate" ]; then
+  . "${PROJECT_ROOT}/.venv/bin/activate"
+elif [ -f "${PROJECT_ROOT}/.venv/Scripts/activate" ]; then
+  . "${PROJECT_ROOT}/.venv/Scripts/activate"
+fi
 
 # --- VSCodium build env ---
-export OS_NAME=osx
-export VSCODE_ARCH=arm64
+case "${OSTYPE}" in
+  darwin*)
+    export OS_NAME="osx"
+    ;;
+  msys* | cygwin*)
+    export OS_NAME="windows"
+    ;;
+  *)
+    export OS_NAME="linux"
+    ;;
+esac
+
+UNAME_ARCH=$( uname -m )
+if [[ "${UNAME_ARCH}" == "aarch64" || "${UNAME_ARCH}" == "arm64" ]]; then
+  export VSCODE_ARCH="arm64"
+else
+  export VSCODE_ARCH="x64"
+fi
 export VSCODE_QUALITY=stable
 # --- Branding (override via apply-branding.sh after prepare_vscode.sh) ---
 export APP_NAME="VS Sharp"
@@ -31,5 +53,9 @@ export NODE_OPTIONS="--max-old-space-size=8192"
 echo "VSCodium env ready:"
 echo "  node:   $( node --version )  ($( which node ))"
 echo "  npm:    $( npm --version )"
-echo "  python: $( python --version )  ($( which python ))"
-echo "  arch:   ${VSCODE_ARCH}  quality: ${VSCODE_QUALITY}"
+  if python --version &>/dev/null; then
+    echo "  python: $( python --version 2>&1 | tr -d '\r' )  ($( which python ))"
+  else
+    echo "  python: not found or unconfigured"
+  fi
+  echo "  arch:   ${VSCODE_ARCH}  quality: ${VSCODE_QUALITY}"

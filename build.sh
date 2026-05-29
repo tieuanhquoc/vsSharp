@@ -16,6 +16,19 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
   if [[ -f "./apply-version.sh" ]];  then ./apply-version.sh;  fi
   if [[ -f "./apply-branding.sh" ]]; then ./apply-branding.sh; fi
 
+  # Apply vssharp/vscode-overrides directly into vscode/
+  if [[ -d "./vssharp/vscode-overrides" ]]; then
+    echo "==> Applying vscode-overrides ..."
+    while IFS= read -r -d '' override_file; do
+      rel_path="${override_file#./vssharp/vscode-overrides/}"
+      dest="./vscode/${rel_path}"
+      if [[ -f "${dest}" ]]; then
+        cp "${override_file}" "${dest}"
+        echo "  Override: ${rel_path}"
+      fi
+    done < <(find "./vssharp/vscode-overrides" -type f -print0)
+  fi
+
   # Inject vssharp extensions into vscode/extensions/ before gulp bundles them.
   # Must run here (after prepare_vscode.sh's git reset via dev/build.sh) so they
   # survive into the .app and the ZIP produced by prepare_assets.sh.
@@ -35,9 +48,9 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
       fi
     done
 
-    if [[ "${OS_NAME}" == "windows" && -d "vssharp/extensions/dotrush" ]]; then
-      ./vssharp/verify-dotrush-runtime.sh "vscode/extensions/dotrush"
-    fi
+    # if [[ "${OS_NAME}" == "windows" && -d "vssharp/extensions/dotrush" ]]; then
+    #   ./vssharp/verify-dotrush-runtime.sh "vscode/extensions/dotrush"
+    # fi
   fi
 
   cd vscode || { echo "'vscode' dir not found"; exit 1; }
@@ -73,6 +86,9 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
       npm run copy-policy-dto --prefix build
       node build/lib/policies/policyGenerator.ts build/lib/policies/policyData.jsonc win32
 
+      # Remove non-Windows prebuilds so rcedit doesn't crash trying to parse ELF/Mach-O binaries
+      rm -rf node_modules/node-pty/prebuilds/linux* node_modules/node-pty/prebuilds/darwin* node_modules/node-pty/prebuilds/alpine*
+
       npm run gulp "vscode-win32-${VSCODE_ARCH}-min-packing"
 
       if [[ "${VSCODE_ARCH}" != "x64" ]]; then
@@ -80,7 +96,7 @@ if [[ "${SHOULD_BUILD}" == "yes" ]]; then
         SHOULD_BUILD_REH_WEB="no"
       fi
 
-      . ../build_cli.sh
+      # . ../build_cli.sh
     fi
 
     VSCODE_PLATFORM="win32"

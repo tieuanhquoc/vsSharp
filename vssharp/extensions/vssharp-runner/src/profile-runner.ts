@@ -217,6 +217,8 @@ export class ProfileRunner implements vscode.Disposable {
       stopAtEntry: false,
       console: 'internalConsole',
       env: this.mergeEnv(p),
+      launchSettingsFilePath: p.launchSettingsPath,
+      launchSettingsProfile: p.profileName,
       serverReadyAction: p.profile.launchBrowser ? {
         action: 'openExternally',
         pattern: '\\bNow listening on:\\s+(https?://\\S+)',

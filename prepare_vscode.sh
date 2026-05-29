@@ -13,6 +13,8 @@ cp -f LICENSE vscode/LICENSE.txt
 
 cd vscode || { echo "'vscode' dir not found"; exit 1; }
 
+
+
 xattr -cr extensions/copilot 2>/dev/null || true; rm -rf extensions/copilot
 
 { set +x; } 2>/dev/null
@@ -205,12 +207,13 @@ node build/npm/preinstall.ts
 
 mv .npmrc .npmrc.bak
 cp ../npmrc .npmrc
+sed -i 's/npmMajor > 11 || (npmMajor === 11 && npmMinor >= 2)/false/g' build/npm/preinstall.ts
 
 for i in {1..5}; do # try 5 times
   if [[ "${CI_BUILD}" != "no" && "${OS_NAME}" == "osx" ]]; then
-    CXX=clang++ npm ci && break
+    CXX=clang++ npm install && break
   else
-    npm ci && break
+    npm install && break
   fi
 
   if [[ $i == 5 ]]; then

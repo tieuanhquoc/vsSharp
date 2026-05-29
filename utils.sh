@@ -48,7 +48,10 @@ apply_patch() {
     fi
   fi
 
-  mv -f $1{.bak,}
+  for _i in {1..10}; do
+    if mv -f $1{.bak,}; then break; fi
+    sleep 1
+  done
 }
 
 exists() { type -t "$1" &> /dev/null; }

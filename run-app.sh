@@ -20,18 +20,27 @@ for ext_dir in "${PROJECT_ROOT}/vssharp/extensions"/*/; do
 done
 
 # Ensure package.json has a valid version (prepare_vscode.sh sets it only when RELEASE_VERSION is set)
-_pkg="${PROJECT_ROOT}/vscode/package.json"
-if [[ "$(python3 -c "import json; print(json.load(open('${_pkg}')).get('version',''))")" == "" ]]; then
-  _orig_ver=$(git -C "${PROJECT_ROOT}/vscode" show HEAD:package.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('version','1.0.0'))")
-  python3 -c "
-import json
-with open('${_pkg}') as f: p = json.load(f)
-p['version'] = '${_orig_ver}'
-with open('${_pkg}', 'w') as f: json.dump(p, f, indent=2)
-"
-  echo "Set dev version: ${_orig_ver}"
+_pkg="./vscode/package.json"
+if [[ -f "${_pkg}" ]]; then
+  _has_version="$(node -e "const fs = require('fs'); try { console.log(JSON.parse(fs.readFileSync('${_pkg}', 'utf8')).version || '') } catch(e) { console.log('') }")"
+  if [[ -z "${_has_version}" ]]; then
+    _orig_ver="$(git -C "${PROJECT_ROOT}/vscode" show HEAD:package.json | node -e "
+      let data = '';
+      process.stdin.on('data', chunk => data += chunk);
+      process.stdin.on('end', () => {
+        try { console.log(JSON.parse(data).version || '1.0.0') } catch(e) { console.log('1.0.0') }
+      });
+    ")"
+    node -e "
+      const fs = require('fs');
+      const p = JSON.parse(fs.readFileSync('${_pkg}', 'utf8'));
+      p.version = '${_orig_ver}';
+      fs.writeFileSync('${_pkg}', JSON.stringify(p, null, 2));
+    "
+    echo "Set dev version: ${_orig_ver}"
+  fi
 fi
-unset _pkg _orig_ver
+unset _pkg _orig_ver _has_version
 
 # Apply vssharp/vscode-overrides directly into vscode/ (dev mode — no patch roundtrip)
 OVERRIDES_DIR="${PROJECT_ROOT}/vssharp/vscode-overrides"

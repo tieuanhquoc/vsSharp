@@ -104,17 +104,17 @@ done
 # Removes: vs-minimal icon theme (replaced by vssharp-file-icon).
 THEME_DEFAULTS_PKG="${VSCODE_EXT}/theme-defaults/package.json"
 if [[ -f "${THEME_DEFAULTS_PKG}" ]]; then
-  python3 - "${THEME_DEFAULTS_PKG}" <<'PYEOF'
-import json, sys
-path = sys.argv[1]
-with open(path) as f:
-    pkg = json.load(f)
-hc_ids = {'Default High Contrast', 'Default High Contrast Light'}
-pkg['contributes']['themes'] = [t for t in pkg['contributes']['themes'] if t['id'] in hc_ids]
-pkg['contributes'].pop('iconThemes', None)
-with open(path, 'w') as f:
-    json.dump(pkg, f, indent=2)
-PYEOF
+  node -e "
+    const fs = require('fs');
+    const path = process.argv[1];
+    const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+    const hc_ids = new Set(['Default High Contrast', 'Default High Contrast Light']);
+    pkg.contributes.themes = pkg.contributes.themes.filter(t => hc_ids.has(t.id));
+    if (pkg.contributes) {
+      delete pkg.contributes.iconThemes;
+    }
+    fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
+  " "${THEME_DEFAULTS_PKG}"
   echo "  patched: theme-defaults (High Contrast only)"
 fi
 

@@ -39,7 +39,7 @@ need_file "package.json"
 
 main_path=""
 if [[ -f "${ROOT}/package.json" ]]; then
-  main_path="$(node -e "const p=require(process.argv[1]); process.stdout.write(p.main || '')" "${ROOT}/package.json")"
+  main_path="$(node -e "const p=require(require('path').resolve(process.argv[1])); process.stdout.write(p.main || '')" "${ROOT}/package.json")"
 fi
 
 if [[ -z "${main_path}" ]]; then
