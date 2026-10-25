@@ -37,7 +37,7 @@ C# / .NET development on VS Code today funnels users into Microsoft's proprietar
 A custom webview panel that replaces VS Code's default file explorer. Two tabs in one container:
 
 - **Solution tab** — parses `.sln` / `.slnx` directly (self-implemented, no MSBuild dependency). Renders:
-  - Solution root with project count (e.g. `VN_MYCLUB sln · 43 projects`)
+  - Solution root with project count (e.g. `This_Project sln · 43 projects`)
   - Solution folders nested as the `.sln` says
   - Projects with their type glyphs (Web / Library / Console, etc.)
   - Expand a project → list source files grouped by folder
